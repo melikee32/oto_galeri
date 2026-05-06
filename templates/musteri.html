@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Müşteri Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>🚗 MÜŞTERİ PANEL</h1>
+        <div>
+            <span>{{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}">Çıkış</a>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('araclar')">🚗 Araçlar</button>
+        <button class="tab-btn" onclick="showTab('al')">🛒 Araç Al</button>
+        <button class="tab-btn" onclick="showTab('sat')">💰 Araç Sat</button>
+        <button class="tab-btn" onclick="showTab('talepler')">📋 Taleplerim</button>
+    </div>
+    
+    <!-- ARAÇLAR -->
+    <div id="araclar" class="tab-content">
+        <h2>Satışta Olan Araçlar</h2>
+        <table>
+            <tr>
+                <th>ID</th><th>Marka/Model</th><th>Yıl</th><th>KM</th><th>Yakıt</th><th>Vites</th><th>Fiyat</th><th>Bayi</th>
+            </tr>
+            {% for a in araclar %}
+            <tr>
+                <td>{{ a.arac_id }}</td>
+                <td>{{ a.marka }} {{ a.model }}</td>
+                <td>{{ a.yil }}</td>
+                <td>{{ a.kilometre }}</td>
+                <td>{{ a.yakit }}</td>
+                <td>{{ a.vites }}</td>
+                <td><b>{{ a.fiyat }} ₺</b></td>
+                <td>{{ a.bayi_adi }} ({{ a.sehir }})</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <!-- ARAÇ AL -->
+    <div id="al" class="tab-content" style="display:none">
+        <h2>Araç Alım Talebi Oluştur</h2>
+        <form method="POST" class="form">
+            <input type="hidden" name="alim_talep" value="1">
+            <label>Almak İstediğiniz Aracı Seçin:</label>
+            <select name="arac_id" required>
+                <option value="">Araç Seçiniz</option>
+                {% for a in araclar %}
+                <option value="{{ a.arac_id }}">{{ a.marka }} {{ a.model }} ({{ a.yil }}) - {{ a.fiyat }} ₺</option>
+                {% endfor %}
+            </select>
+            
+            <label>Ödeme Tipi:</label>
+            <select name="odeme_tipi" required>
+                <option value="">Seçiniz</option>
+                <option>Peşin</option>
+                <option>Kredi</option>
+                <option>Takas</option>
+            </select>
+            
+            <label>Notlar:</label>
+            <textarea name="notlar" placeholder="İstekleriniz, sorularınız..."></textarea>
+            
+            <button type="submit">Talep Gönder</button>
+        </form>
+    </div>
+    
+    <!-- ARAÇ SAT -->
+    <div id="sat" class="tab-content" style="display:none">
+        <h2>Araç Satım Talebi Oluştur</h2>
+        <form method="POST" class="form">
+            <input type="hidden" name="satim_talep" value="1">
+            <label>Hangi Bayiye Satmak İstiyorsunuz?</label>
+            <select name="bayi_id" required>
+                <option value="">Bayi Seçiniz</option>
+                {% for b in bayiler %}
+                <option value="{{ b.bayi_id }}">{{ b.bayi_adi }} - {{ b.sehir }}</option>
+                {% endfor %}
+            </select>
+            
+            <div class="row">
+                <input type="text" name="marka" placeholder="Marka" required>
+                <input type="text" name="model" placeholder="Model" required>
+            </div>
+            
+            <div class="row">
+                <input type="number" name="yil" placeholder="Yıl" required>
+                <input type="number" name="kilometre" placeholder="Kilometre" required>
+            </div>
+            
+            <div class="row">
+                <input type="number" step="0.01" name="fiyat_beklentisi" placeholder="Fiyat Beklentiniz (₺)" required>
+                <select name="ekspertiz" required>
+                    <option value="">Ekspertiz Var mı?</option>
+                    <option>Var</option>
+                    <option>Yok</option>
+                </select>
+            </div>
+            
+            <button type="submit">Satım Talebi Gönder</button>
+        </form>
+    </div>
+    
+    <!-- TALEPLERİM -->
+    <div id="talepler" class="tab-content" style="display:none">
+        <h2>Alım Taleplerim</h2>
+        <table>
+            <tr>
+                <th>ID</th><th>Araç</th><th>Fiyat</th><th>Ödeme</th><th>Durum</th><th>Bayi</th><th>Tarih</th>
+            </tr>
+            {% for t in alim_talepleri %}
+            <tr>
+                <td>{{ t.talep_id }}</td>
+                <td>{{ t.marka }} {{ t.model }} ({{ t.yil }})</td>
+                <td>{{ t.fiyat }} ₺</td>
+                <td>{{ t.odeme_tipi }}</td>
+                <td>{{ t.durum }}</td>
+                <td>{{ t.bayi_adi }}</td>
+                <td>{{ t.talep_tarihi.strftime('%d.%m.%Y') }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        
+        <h2>Satım Taleplerim</h2>
+        <table>
+            <tr>
+                <th>ID</th><th>Araç</th><th>KM</th><th>Fiyat Beklentisi</th><th>Ekspertiz</th><th>Durum</th><th>Bayi</th><th>Tarih</th>
+            </tr>
+            {% for t in satim_talepleri %}
+            <tr>
+                <td>{{ t.talep_id }}</td>
+                <td>{{ t.marka }} {{ t.model }} ({{ t.yil }})</td>
+                <td>{{ t.kilometre }}</td>
+                <td>{{ t.fiyat_beklentisi }} ₺</td>
+                <td>{{ t.ekspertiz }}</td>
+                <td>{{ t.durum }}</td>
+                <td>{{ t.bayi_adi }}</td>
+                <td>{{ t.talep_tarihi.strftime('%d.%m.%Y') }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <script>
+        function showTab(tab) {
+            var tabs = document.getElementsByClassName('tab-content');
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].style.display = 'none';
+            }
+            var btns = document.getElementsByClassName('tab-btn');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove('active');
+            }
+            document.getElementById(tab).style.display = 'block';
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

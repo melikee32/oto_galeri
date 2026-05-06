@@ -1,22 +1,17 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import mysql.connector
-from datetime import datetime
-import os
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here_change_this'
+app.secret_key = 'gizli_anahtar_12345'
 
-# Veritabanı bağlantı ayarları
-DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': '',  # XAMPP varsayılan şifre boş
-    'database': 'oto_galeri'
-}
-
+# Veritabanı bağlantısı
 def get_db():
-    """Veritabanı bağlantısı oluşturur"""
-    return mysql.connector.connect(**DB_CONFIG)
+    return mysql.connector.connect(
+        host='localhost',
+        user='root',
+        password='',
+        database='oto_galeri'
+    )
 
 # ============================================
 # ANA SAYFA VE LOGIN
@@ -24,30 +19,24 @@ def get_db():
 
 @app.route('/')
 def index():
-    """Ana sayfa - Login olmamış kullanıcılar için"""
     if 'kullanici_id' in session:
-        yetki = session.get('yetki')
-        if yetki == 'admin':
-            return redirect(url_for('admin_dashboard'))
-        elif yetki == 'personel':
-            return redirect(url_for('bayi_dashboard'))
-        elif yetki == 'musteri':
-            return redirect(url_for('musteri_dashboard'))
+        if session['yetki'] == 'admin':
+            return redirect(url_for('admin'))
+        elif session['yetki'] == 'personel':
+            return redirect(url_for('bayi'))
+        elif session['yetki'] == 'musteri':
+            return redirect(url_for('musteri'))
     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Giriş sayfası"""
     if request.method == 'POST':
         email = request.form['email']
         sifre = request.form['sifre']
         
         db = get_db()
         cursor = db.cursor(dictionary=True)
-        cursor.execute(
-            "SELECT * FROM kullanicilar WHERE email = %s AND sifre = %s",
-            (email, sifre)
-        )
+        cursor.execute("SELECT * FROM kullanicilar WHERE email=%s AND sifre=%s", (email, sifre))
         kullanici = cursor.fetchone()
         cursor.close()
         db.close()
@@ -57,19 +46,24 @@ def login():
             session['ad'] = kullanici['ad']
             session['soyad'] = kullanici['soyad']
             session['yetki'] = kullanici['yetki']
-            
-            flash('Başarıyla giriş yapıldı!', 'success')
+            flash('Giriş başarılı!', 'success')
             
             if kullanici['yetki'] == 'admin':
-                return redirect(url_for('admin_dashboard'))
+                return redirect(url_for('admin'))
             elif kullanici['yetki'] == 'personel':
-                return redirect(url_for('bayi_dashboard'))
-            elif kullanici['yetki'] == 'musteri':
-                return redirect(url_for('musteri_dashboard'))
+                return redirect(url_for('bayi'))
+            else:
+                return redirect(url_for('musteri'))
         else:
             flash('Email veya şifre hatalı!', 'error')
     
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Çıkış yapıldı!', 'success')
+    return redirect(url_for('login'))
 
 @app.route('/kayit', methods=['GET', 'POST'])
 def kayit():
@@ -101,117 +95,19 @@ def kayit():
     
     return render_template('kayit.html')
 
-@app.route('/logout')
-def logout():
-    """Çıkış yap"""
-    session.clear()
-    flash('Başarıyla çıkış yapıldı!', 'success')
-    return redirect(url_for('login'))
-
 # ============================================
-# ADMIN PANEL
+# ADMIN PANEL - TEK SAYFA
 # ============================================
 
 @app.route('/admin')
-def admin_dashboard():
-    """Admin ana sayfa"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'admin':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
+def admin():
+    if 'kullanici_id' not in session or session['yetki'] != 'admin':
         return redirect(url_for('login'))
     
     db = get_db()
     cursor = db.cursor(dictionary=True)
     
-    # İstatistikler
-    cursor.execute("SELECT COUNT(*) as toplam FROM bayiler")
-    bayi_sayisi = cursor.fetchone()['toplam']
-    
-    cursor.execute("SELECT COUNT(*) as toplam FROM araclar")
-    arac_sayisi = cursor.fetchone()['toplam']
-    
-    cursor.execute("SELECT COUNT(*) as toplam FROM kullanicilar WHERE yetki='musteri'")
-    musteri_sayisi = cursor.fetchone()['toplam']
-    
-    cursor.execute("SELECT COUNT(*) as toplam FROM arac_alim_talebi WHERE durum='Beklemede'")
-    bekleyen_talepler = cursor.fetchone()['toplam']
-    
-    cursor.close()
-    db.close()
-    
-    return render_template('admin/index.html',
-                         bayi_sayisi=bayi_sayisi,
-                         arac_sayisi=arac_sayisi,
-                         musteri_sayisi=musteri_sayisi,
-                         bekleyen_talepler=bekleyen_talepler)
-
-# ============================================
-# BAYİ PANEL
-# ============================================
-
-@app.route('/bayi')
-def bayi_dashboard():
-    """Bayi personel ana sayfa"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'personel':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
-        return redirect(url_for('login'))
-    
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    
-    # Personelin bağlı olduğu bayi
-    cursor.execute("""
-        SELECT b.* FROM bayiler b
-        JOIN personeller p ON b.bayi_id = p.bayi_id
-        WHERE p.kullanici_id = %s
-    """, (session['kullanici_id'],))
-    bayi = cursor.fetchone()
-    
-    if not bayi:
-        flash('Personel kaydınız bulunamadı!', 'error')
-        return redirect(url_for('logout'))
-    
-    bayi_id = bayi['bayi_id']
-    
-    # İstatistikler
-    cursor.execute("SELECT COUNT(*) as toplam FROM araclar WHERE bayi_id = %s", (bayi_id,))
-    arac_sayisi = cursor.fetchone()['toplam']
-    
-    cursor.execute("""
-        SELECT COUNT(*) as toplam FROM arac_alim_talebi aat
-        JOIN araclar a ON aat.arac_id = a.arac_id
-        WHERE a.bayi_id = %s AND aat.durum = 'Beklemede'
-    """, (bayi_id,))
-    bekleyen_alim = cursor.fetchone()['toplam']
-    
-    cursor.execute("""
-        SELECT COUNT(*) as toplam FROM arac_satim_talebi
-        WHERE bayi_id = %s AND durum = 'Beklemede'
-    """, (bayi_id,))
-    bekleyen_satim = cursor.fetchone()['toplam']
-    
-    cursor.close()
-    db.close()
-    
-    return render_template('bayi/index.html',
-                         bayi=bayi,
-                         arac_sayisi=arac_sayisi,
-                         bekleyen_alim=bekleyen_alim,
-                         bekleyen_satim=bekleyen_satim)
-
-# ============================================
-# ADMIN - BAYİLER YÖNETİMİ
-# ============================================
-
-@app.route('/admin/bayiler')
-def admin_bayiler():
-    """Admin - Bayileri listele"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'admin':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
-        return redirect(url_for('login'))
-    
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    
+    # Bayiler
     cursor.execute("""
         SELECT b.*, 
                COUNT(DISTINCT a.arac_id) as arac_sayisi,
@@ -223,25 +119,7 @@ def admin_bayiler():
     """)
     bayiler = cursor.fetchall()
     
-    cursor.close()
-    db.close()
-    
-    return render_template('admin/bayiler.html', bayiler=bayiler)
-
-# ============================================
-# ADMIN - ARAÇLAR YÖNETİMİ
-# ============================================
-
-@app.route('/admin/araclar')
-def admin_araclar():
-    """Admin - Tüm araçları listele"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'admin':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
-        return redirect(url_for('login'))
-    
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    
+    # Araçlar
     cursor.execute("""
         SELECT a.*, b.bayi_adi, b.sehir
         FROM araclar a
@@ -250,53 +128,14 @@ def admin_araclar():
     """)
     araclar = cursor.fetchall()
     
-    cursor.close()
-    db.close()
-    
-    return render_template('admin/araclar.html', araclar=araclar)
-
-# ============================================
-# ADMIN - KULLANICILAR YÖNETİMİ
-# ============================================
-
-@app.route('/admin/kullanicilar')
-def admin_kullanicilar():
-    """Admin - Kullanıcıları listele"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'admin':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
-        return redirect(url_for('login'))
-    
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    
+    # Kullanıcılar
     cursor.execute("SELECT * FROM kullanicilar ORDER BY kayit_tarihi DESC")
     kullanicilar = cursor.fetchall()
     
-    cursor.close()
-    db.close()
-    
-    return render_template('admin/kullanicilar.html', kullanicilar=kullanicilar)
-
-# ============================================
-# ADMIN - TALEPLER YÖNETİMİ
-# ============================================
-
-@app.route('/admin/talepler')
-def admin_talepler():
-    """Admin - Tüm talepleri listele"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'admin':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
-        return redirect(url_for('login'))
-    
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    
-    # Alım talepleri
+    # Alım Talepleri
     cursor.execute("""
-        SELECT aat.*, 
-               a.marka, a.model, a.yil, a.fiyat,
-               b.bayi_adi,
-               k.ad, k.soyad, k.email, k.telefon
+        SELECT aat.*, a.marka, a.model, a.yil, a.fiyat,
+               b.bayi_adi, k.ad, k.soyad, k.email, k.telefon
         FROM arac_alim_talebi aat
         JOIN araclar a ON aat.arac_id = a.arac_id
         JOIN bayiler b ON a.bayi_id = b.bayi_id
@@ -305,11 +144,9 @@ def admin_talepler():
     """)
     alim_talepleri = cursor.fetchall()
     
-    # Satım talepleri
+    # Satım Talepleri
     cursor.execute("""
-        SELECT ast.*,
-               b.bayi_adi,
-               k.ad, k.soyad, k.email, k.telefon
+        SELECT ast.*, b.bayi_adi, k.ad, k.soyad, k.email, k.telefon
         FROM arac_satim_talebi ast
         JOIN bayiler b ON ast.bayi_id = b.bayi_id
         JOIN kullanicilar k ON ast.musteri_id = k.kullanici_id
@@ -320,126 +157,126 @@ def admin_talepler():
     cursor.close()
     db.close()
     
-    return render_template('admin/talepler.html', 
+    return render_template('admin.html',
+                         bayiler=bayiler,
+                         araclar=araclar,
+                         kullanicilar=kullanicilar,
                          alim_talepleri=alim_talepleri,
                          satim_talepleri=satim_talepleri)
 
 # ============================================
-# BAYİ - ARAÇLAR YÖNETİMİ
+# BAYİ PANEL - TEK SAYFA
 # ============================================
 
-@app.route('/bayi/araclar')
-def bayi_araclar():
-    """Bayi - Kendi araçlarını listele"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'personel':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
+@app.route('/bayi', methods=['GET', 'POST'])
+def bayi():
+    if 'kullanici_id' not in session or session['yetki'] != 'personel':
         return redirect(url_for('login'))
     
     db = get_db()
     cursor = db.cursor(dictionary=True)
     
-    # Personelin bayi ID'sini al
-    cursor.execute("""
-        SELECT bayi_id FROM personeller 
-        WHERE kullanici_id = %s
-    """, (session['kullanici_id'],))
-    result = cursor.fetchone()
-    
-    if not result:
-        flash('Personel kaydınız bulunamadı!', 'error')
+    # Bayi ID al
+    cursor.execute("SELECT bayi_id FROM personeller WHERE kullanici_id=%s", (session['kullanici_id'],))
+    bayi_info = cursor.fetchone()
+    if not bayi_info:
         return redirect(url_for('logout'))
+    bayi_id = bayi_info['bayi_id']
     
-    bayi_id = result['bayi_id']
-    
-    # Bayinin araçlarını getir
-    cursor.execute("""
-        SELECT * FROM araclar 
-        WHERE bayi_id = %s
-        ORDER BY ilan_tarihi DESC
-    """, (bayi_id,))
-    araclar = cursor.fetchall()
-    
-    cursor.close()
-    db.close()
-    
-    return render_template('bayi/araclar.html', araclar=araclar)
-
-@app.route('/bayi/arac-ekle', methods=['GET', 'POST'])
-def bayi_arac_ekle():
-    """Bayi - Yeni araç ekle"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'personel':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
-        return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        db = get_db()
-        cursor = db.cursor(dictionary=True)
-        
-        # Personelin bayi ID'sini al
-        cursor.execute("""
-            SELECT bayi_id FROM personeller 
-            WHERE kullanici_id = %s
-        """, (session['kullanici_id'],))
-        result = cursor.fetchone()
-        bayi_id = result['bayi_id']
-        
-        # Form verilerini al
-        marka = request.form['marka']
-        model = request.form['model']
-        yil = request.form['yil']
-        kilometre = request.form['kilometre']
-        yakit = request.form['yakit']
-        vites = request.form['vites']
-        renk = request.form['renk']
-        fiyat = request.form['fiyat']
-        plaka = request.form['plaka']
-        arac_durumu = request.form['arac_durumu']
-        aciklama = request.form.get('aciklama', '')
-        
-        # Veritabanına ekle
+    # Araç ekleme
+    if request.method == 'POST' and 'arac_ekle' in request.form:
         cursor.execute("""
             INSERT INTO araclar 
-            (bayi_id, marka, model, yil, kilometre, yakit, vites, renk, 
-             fiyat, plaka, arac_durumu, aciklama, ilan_tarihi)
+            (bayi_id, marka, model, yil, kilometre, yakit, vites, renk, fiyat, plaka, arac_durumu, aciklama, ilan_tarihi)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
-        """, (bayi_id, marka, model, yil, kilometre, yakit, vites, renk, 
-              fiyat, plaka, arac_durumu, aciklama))
-        
+        """, (bayi_id, request.form['marka'], request.form['model'], request.form['yil'],
+              request.form['kilometre'], request.form['yakit'], request.form['vites'],
+              request.form['renk'], request.form['fiyat'], request.form['plaka'],
+              request.form['arac_durumu'], request.form.get('aciklama', '')))
         db.commit()
-        cursor.close()
-        db.close()
+        flash('Araç eklendi!', 'success')
+    
+    # Personel ekleme
+    if request.method == 'POST' and 'personel_ekle' in request.form:
+        ad = request.form['ad']
+        soyad = request.form['soyad']
+        email = request.form['email']
+        telefon = request.form['telefon']
+        sifre = request.form['sifre']
+        gorev = request.form['gorev']
         
-        flash('Araç başarıyla eklendi!', 'success')
-        return redirect(url_for('bayi_araclar'))
+        try:
+            # Kullanıcı ekle
+            cursor.execute("""
+                INSERT INTO kullanicilar (ad, soyad, email, telefon, sifre, yetki, kayit_tarihi)
+                VALUES (%s, %s, %s, %s, %s, 'personel', NOW())
+            """, (ad, soyad, email, telefon, sifre))
+            db.commit()
+            
+            # Yeni user ID'sini al
+            kullanici_id = cursor.lastrowid
+            
+            # Personel tablosuna ekle
+            cursor.execute("""
+                INSERT INTO personeller (kullanici_id, bayi_id, gorev)
+                VALUES (%s, %s, %s)
+            """, (kullanici_id, bayi_id, gorev))
+            db.commit()
+            flash('Eleman başarıyla eklendi!', 'success')
+        except:
+            flash('Bu email zaten kullanılıyor!', 'error')
     
-    return render_template('bayi/arac_ekle.html')
-
-# ============================================
-# BAYİ - ALIM TALEPLERİ
-# ============================================
-
-@app.route('/bayi/alim-talepleri')
-def bayi_alim_talepleri():
-    """Bayi - Alım taleplerini listele"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'personel':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
-        return redirect(url_for('login'))
+    # Talep durumu güncelleme (Alım)
+    if request.method == 'POST' and 'alim_durum' in request.form:
+        cursor.execute("UPDATE arac_alim_talebi SET durum=%s WHERE talep_id=%s",
+                      (request.form['durum'], request.form['talep_id']))
+        db.commit()
+        flash('Talep güncellendi!', 'success')
     
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
+    # Talep durumu güncelleme (Satım) + Stoğa ekleme
+    if request.method == 'POST' and 'satim_durum' in request.form:
+        durum = request.form['durum']
+        talep_id = request.form['talep_id']
+        
+        # Eğer "Satın Alındı" ise stoğa ekle
+        if durum == 'Satin Alindi':
+            cursor.execute("SELECT * FROM arac_satim_talebi WHERE talep_id=%s", (talep_id,))
+            talep = cursor.fetchone()
+            
+            # Müşteriden alınan aracı stoğa ekle
+            cursor.execute("""
+                INSERT INTO araclar 
+                (bayi_id, marka, model, yil, kilometre, yakit, vites, renk, fiyat, plaka, arac_durumu, aciklama, ilan_tarihi)
+                VALUES (%s, %s, %s, %s, %s, 'Benzin', 'Manuel', 'Belirsiz', %s, 'YENİ', 'Satista', 'Müşteriden alınan araç', NOW())
+            """, (bayi_id, talep['marka'], talep['model'], talep['yil'], 
+                  talep['kilometre'], talep['fiyat_beklentisi']))
+            db.commit()
+            flash('Araç stoğa eklendi!', 'success')
+        
+        cursor.execute("UPDATE arac_satim_talebi SET durum=%s WHERE talep_id=%s", (durum, talep_id))
+        db.commit()
+        flash('Talep güncellendi!', 'success')
     
-    # Personelin bayi ID'sini al
+    # Bayi bilgileri
+    cursor.execute("SELECT * FROM bayiler WHERE bayi_id=%s", (bayi_id,))
+    bayi = cursor.fetchone()
+    
+    # Araçlar
+    cursor.execute("SELECT * FROM araclar WHERE bayi_id=%s ORDER BY ilan_tarihi DESC", (bayi_id,))
+    araclar = cursor.fetchall()
+    
+    # Personeller
     cursor.execute("""
-        SELECT bayi_id FROM personeller 
-        WHERE kullanici_id = %s
-    """, (session['kullanici_id'],))
-    result = cursor.fetchone()
-    bayi_id = result['bayi_id']
+        SELECT k.*, p.personel_id, p.gorev
+        FROM personeller p
+        JOIN kullanicilar k ON p.kullanici_id = k.kullanici_id
+        WHERE p.bayi_id = %s
+    """, (bayi_id,))
+    personeller = cursor.fetchall()
     
-    # Alım taleplerini getir
+    # Alım talepleri
     cursor.execute("""
-        SELECT aat.*, 
-               a.marka, a.model, a.yil, a.fiyat, a.plaka,
+        SELECT aat.*, a.marka, a.model, a.yil, a.fiyat, a.plaka,
                k.ad, k.soyad, k.email, k.telefon
         FROM arac_alim_talebi aat
         JOIN araclar a ON aat.arac_id = a.arac_id
@@ -447,108 +284,61 @@ def bayi_alim_talepleri():
         WHERE a.bayi_id = %s
         ORDER BY aat.talep_tarihi DESC
     """, (bayi_id,))
-    talepler = cursor.fetchall()
+    alim_talepleri = cursor.fetchall()
     
-    cursor.close()
-    db.close()
-    
-    return render_template('bayi/alim_talepleri.html', talepler=talepler)
-
-@app.route('/bayi/alim-talep-duzenle/<int:talep_id>', methods=['POST'])
-def bayi_alim_talep_duzenle(talep_id):
-    """Bayi - Alım talebi durumunu güncelle"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'personel':
-        return redirect(url_for('login'))
-    
-    durum = request.form['durum']
-    
-    db = get_db()
-    cursor = db.cursor()
+    # Satım talepleri
     cursor.execute("""
-        UPDATE arac_alim_talebi 
-        SET durum = %s 
-        WHERE talep_id = %s
-    """, (durum, talep_id))
-    db.commit()
-    cursor.close()
-    db.close()
-    
-    flash('Talep durumu güncellendi!', 'success')
-    return redirect(url_for('bayi_alim_talepleri'))
-
-# ============================================
-# BAYİ - SATIM TALEPLERİ
-# ============================================
-
-@app.route('/bayi/satim-talepleri')
-def bayi_satim_talepleri():
-    """Bayi - Satım taleplerini listele"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'personel':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
-        return redirect(url_for('login'))
-    
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    
-    # Personelin bayi ID'sini al
-    cursor.execute("""
-        SELECT bayi_id FROM personeller 
-        WHERE kullanici_id = %s
-    """, (session['kullanici_id'],))
-    result = cursor.fetchone()
-    bayi_id = result['bayi_id']
-    
-    # Satım taleplerini getir
-    cursor.execute("""
-        SELECT ast.*,
-               k.ad, k.soyad, k.email, k.telefon
+        SELECT ast.*, k.ad, k.soyad, k.email, k.telefon
         FROM arac_satim_talebi ast
         JOIN kullanicilar k ON ast.musteri_id = k.kullanici_id
         WHERE ast.bayi_id = %s
         ORDER BY ast.talep_tarihi DESC
     """, (bayi_id,))
-    talepler = cursor.fetchall()
+    satim_talepleri = cursor.fetchall()
     
     cursor.close()
     db.close()
     
-    return render_template('bayi/satim_talepleri.html', talepler=talepler)
-
-@app.route('/bayi/satim-talep-duzenle/<int:talep_id>', methods=['POST'])
-def bayi_satim_talep_duzenle(talep_id):
-    """Bayi - Satım talebi durumunu güncelle"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'personel':
-        return redirect(url_for('login'))
-    
-    durum = request.form['durum']
-    
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("""
-        UPDATE arac_satim_talebi 
-        SET durum = %s 
-        WHERE talep_id = %s
-    """, (durum, talep_id))
-    db.commit()
-    cursor.close()
-    db.close()
-    
-    flash('Talep durumu güncellendi!', 'success')
-    return redirect(url_for('bayi_satim_talepleri'))
+    return render_template('bayi.html',
+                         bayi=bayi,
+                         araclar=araclar,
+                         personeller=personeller,
+                         alim_talepleri=alim_talepleri,
+                         satim_talepleri=satim_talepleri)
 
 # ============================================
-# MÜŞTERİ PANEL
+# MÜŞTERİ PANEL - TEK SAYFA
 # ============================================
 
-@app.route('/musteri')
-def musteri_dashboard():
-    """Müşteri ana sayfa"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'musteri':
-        flash('Bu sayfaya erişim yetkiniz yok!', 'error')
+@app.route('/musteri', methods=['GET', 'POST'])
+def musteri():
+    if 'kullanici_id' not in session or session['yetki'] != 'musteri':
         return redirect(url_for('login'))
     
     db = get_db()
     cursor = db.cursor(dictionary=True)
+    
+    # Araç alım talebi oluşturma
+    if request.method == 'POST' and 'alim_talep' in request.form:
+        cursor.execute("""
+            INSERT INTO arac_alim_talebi (musteri_id, arac_id, odeme_tipi, durum, notlar, talep_tarihi)
+            VALUES (%s, %s, %s, 'Beklemede', %s, NOW())
+        """, (session['kullanici_id'], request.form['arac_id'], 
+              request.form['odeme_tipi'], request.form.get('notlar', '')))
+        db.commit()
+        flash('Alım talebi oluşturuldu!', 'success')
+    
+    # Araç satım talebi oluşturma
+    if request.method == 'POST' and 'satim_talep' in request.form:
+        cursor.execute("""
+            INSERT INTO arac_satim_talebi 
+            (musteri_id, bayi_id, marka, model, yil, kilometre, fiyat_beklentisi, ekspertiz, durum, talep_tarihi)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'Beklemede', NOW())
+        """, (session['kullanici_id'], request.form['bayi_id'], request.form['marka'],
+              request.form['model'], request.form['yil'], request.form['kilometre'],
+              request.form['fiyat_beklentisi'], request.form['ekspertiz']))
+        db.commit()
+        flash('Satım talebi oluşturuldu!', 'success')
     
     # Satışta olan araçlar
     cursor.execute("""
@@ -557,100 +347,12 @@ def musteri_dashboard():
         JOIN bayiler b ON a.bayi_id = b.bayi_id
         WHERE a.arac_durumu = 'Satista'
         ORDER BY a.ilan_tarihi DESC
-        LIMIT 6
     """)
     araclar = cursor.fetchall()
     
-    # Müşterinin talepleri
-    cursor.execute("""
-        SELECT COUNT(*) as toplam FROM arac_alim_talebi
-        WHERE musteri_id = %s
-    """, (session['kullanici_id'],))
-    alim_talebi_sayisi = cursor.fetchone()['toplam']
-    
-    cursor.execute("""
-        SELECT COUNT(*) as toplam FROM arac_satim_talebi
-        WHERE musteri_id = %s
-    """, (session['kullanici_id'],))
-    satim_talebi_sayisi = cursor.fetchone()['toplam']
-    
-    cursor.close()
-    db.close()
-    
-    return render_template('musteri/index.html',
-                         araclar=araclar,
-                         alim_talebi_sayisi=alim_talebi_sayisi,
-                         satim_talebi_sayisi=satim_talebi_sayisi)
-
-@app.route('/musteri/araclar')
-def musteri_araclar():
-    """Müşteri - Tüm araçları listele"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'musteri':
-        return redirect(url_for('login'))
-    
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    
-    cursor.execute("""
-        SELECT a.*, b.bayi_adi, b.sehir
-        FROM araclar a
-        JOIN bayiler b ON a.bayi_id = b.bayi_id
-        WHERE a.arac_durumu = 'Satista'
-        ORDER BY a.ilan_tarihi DESC
-    """)
-    araclar = cursor.fetchall()
-    
-    cursor.close()
-    db.close()
-    
-    return render_template('musteri/araclar.html', araclar=araclar)
-
-@app.route('/musteri/talep-olustur/<int:arac_id>', methods=['GET', 'POST'])
-def musteri_talep_olustur(arac_id):
-    """Müşteri - Araç alım talebi oluştur"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'musteri':
-        return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        odeme_tipi = request.form['odeme_tipi']
-        notlar = request.form['notlar']
-        
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("""
-            INSERT INTO arac_alim_talebi
-            (musteri_id, arac_id, odeme_tipi, durum, notlar, talep_tarihi)
-            VALUES (%s, %s, %s, 'Beklemede', %s, NOW())
-        """, (session['kullanici_id'], arac_id, odeme_tipi, notlar))
-        db.commit()
-        cursor.close()
-        db.close()
-        
-        flash('Talebiniz başarıyla oluşturuldu!', 'success')
-        return redirect(url_for('musteri_taleplerim'))
-    
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT a.*, b.bayi_adi
-        FROM araclar a
-        JOIN bayiler b ON a.bayi_id = b.bayi_id
-        WHERE a.arac_id = %s
-    """, (arac_id,))
-    arac = cursor.fetchone()
-    cursor.close()
-    db.close()
-    
-    return render_template('musteri/talep_olustur.html', arac=arac)
-
-@app.route('/musteri/taleplerim')
-def musteri_taleplerim():
-    """Müşteri - Taleplerim"""
-    if 'kullanici_id' not in session or session.get('yetki') != 'musteri':
-        return redirect(url_for('login'))
-    
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
+    # Bayiler
+    cursor.execute("SELECT * FROM bayiler")
+    bayiler = cursor.fetchall()
     
     # Alım talepleri
     cursor.execute("""
@@ -676,9 +378,11 @@ def musteri_taleplerim():
     cursor.close()
     db.close()
     
-    return render_template('musteri/taleplerim.html',
+    return render_template('musteri.html',
+                         araclar=araclar,
+                         bayiler=bayiler,
                          alim_talepleri=alim_talepleri,
                          satim_talepleri=satim_talepleri)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, port=5000)

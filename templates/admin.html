@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>👑 ADMIN PANEL</h1>
+        <div>
+            <span>{{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}">Çıkış</a>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('bayiler')">🏪 Bayiler</button>
+        <button class="tab-btn" onclick="showTab('araclar')">🚗 Araçlar</button>
+        <button class="tab-btn" onclick="showTab('kullanicilar')">👥 Kullanıcılar</button>
+        <button class="tab-btn" onclick="showTab('alim')">🛒 Alım Talepleri</button>
+        <button class="tab-btn" onclick="showTab('satim')">💰 Satım Talepleri</button>
+    </div>
+    
+    <!-- BAYİLER -->
+    <div id="bayiler" class="tab-content">
+        <h2>Bayiler</h2>
+        <table>
+            <tr>
+                <th>ID</th><th>Bayi Adı</th><th>Şehir</th><th>Telefon</th><th>Araç</th><th>Personel</th>
+            </tr>
+            {% for b in bayiler %}
+            <tr>
+                <td>{{ b.bayi_id }}</td>
+                <td>{{ b.bayi_adi }}</td>
+                <td>{{ b.sehir }}</td>
+                <td>{{ b.telefon }}</td>
+                <td>{{ b.arac_sayisi }}</td>
+                <td>{{ b.personel_sayisi }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <!-- ARAÇLAR -->
+    <div id="araclar" class="tab-content" style="display:none">
+        <h2>Araçlar</h2>
+        <table>
+            <tr>
+                <th>ID</th><th>Marka/Model</th><th>Yıl</th><th>KM</th><th>Fiyat</th><th>Durum</th><th>Bayi</th>
+            </tr>
+            {% for a in araclar %}
+            <tr>
+                <td>{{ a.arac_id }}</td>
+                <td>{{ a.marka }} {{ a.model }}</td>
+                <td>{{ a.yil }}</td>
+                <td>{{ a.kilometre }}</td>
+                <td>{{ a.fiyat }} ₺</td>
+                <td>{{ a.arac_durumu }}</td>
+                <td>{{ a.bayi_adi }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <!-- KULLANICILAR -->
+    <div id="kullanicilar" class="tab-content" style="display:none">
+        <h2>Kullanıcılar</h2>
+        <table>
+            <tr>
+                <th>ID</th><th>Ad Soyad</th><th>Email</th><th>Telefon</th><th>Yetki</th>
+            </tr>
+            {% for k in kullanicilar %}
+            <tr>
+                <td>{{ k.kullanici_id }}</td>
+                <td>{{ k.ad }} {{ k.soyad }}</td>
+                <td>{{ k.email }}</td>
+                <td>{{ k.telefon }}</td>
+                <td>{{ k.yetki }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <!-- ALIM TALEPLERİ -->
+    <div id="alim" class="tab-content" style="display:none">
+        <h2>Alım Talepleri</h2>
+        <table>
+            <tr>
+                <th>ID</th><th>Müşteri</th><th>Araç</th><th>Fiyat</th><th>Ödeme</th><th>Durum</th><th>Bayi</th>
+            </tr>
+            {% for t in alim_talepleri %}
+            <tr>
+                <td>{{ t.talep_id }}</td>
+                <td>{{ t.ad }} {{ t.soyad }}</td>
+                <td>{{ t.marka }} {{ t.model }} ({{ t.yil }})</td>
+                <td>{{ t.fiyat }} ₺</td>
+                <td>{{ t.odeme_tipi }}</td>
+                <td>{{ t.durum }}</td>
+                <td>{{ t.bayi_adi }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <!-- SATIM TALEPLERİ -->
+    <div id="satim" class="tab-content" style="display:none">
+        <h2>Satım Talepleri</h2>
+        <table>
+            <tr>
+                <th>ID</th><th>Müşteri</th><th>Araç</th><th>KM</th><th>Fiyat Beklentisi</th><th>Ekspertiz</th><th>Durum</th><th>Bayi</th>
+            </tr>
+            {% for t in satim_talepleri %}
+            <tr>
+                <td>{{ t.talep_id }}</td>
+                <td>{{ t.ad }} {{ t.soyad }}</td>
+                <td>{{ t.marka }} {{ t.model }} ({{ t.yil }})</td>
+                <td>{{ t.kilometre }}</td>
+                <td>{{ t.fiyat_beklentisi }} ₺</td>
+                <td>{{ t.ekspertiz }}</td>
+                <td>{{ t.durum }}</td>
+                <td>{{ t.bayi_adi }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <script>
+        function showTab(tab) {
+            var tabs = document.getElementsByClassName('tab-content');
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].style.display = 'none';
+            }
+            var btns = document.getElementsByClassName('tab-btn');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove('active');
+            }
+            document.getElementById(tab).style.display = 'block';
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
