@@ -264,9 +264,18 @@ body {
     color: white;
 }
 
-.stat-card-blue .stat-info h3,
+.stat-card-blue .stat-icon {
+    font-size: 3rem;
+}
+
+.stat-card-blue .stat-info h3 {
+    color: white !important;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
 .stat-card-blue .stat-info p {
-    color: white;
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .stat-card-green {
@@ -274,9 +283,18 @@ body {
     color: white;
 }
 
-.stat-card-green .stat-info h3,
+.stat-card-green .stat-icon {
+    font-size: 3rem;
+}
+
+.stat-card-green .stat-info h3 {
+    color: white !important;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
 .stat-card-green .stat-info p {
-    color: white;
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .stat-card-purple {
@@ -284,9 +302,18 @@ body {
     color: white;
 }
 
-.stat-card-purple .stat-info h3,
+.stat-card-purple .stat-icon {
+    font-size: 3rem;
+}
+
+.stat-card-purple .stat-info h3 {
+    color: white !important;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
 .stat-card-purple .stat-info p {
-    color: white;
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .stat-card-orange {
@@ -294,9 +321,18 @@ body {
     color: white;
 }
 
-.stat-card-orange .stat-info h3,
+.stat-card-orange .stat-icon {
+    font-size: 3rem;
+}
+
+.stat-card-orange .stat-info h3 {
+    color: white !important;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
 .stat-card-orange .stat-info p {
-    color: white;
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
 /* ============================================
