@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Araçlar - Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- ÜST MENÜ ÇUBUĞU -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>🚗 OTO GALERİ - ADMIN</h2>
+        </div>
+        <div class="navbar-menu">
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-link">Ana Sayfa</a>
+            <a href="{{ url_for('admin_bayiler') }}" class="nav-link">Bayiler</a>
+            <a href="{{ url_for('admin_araclar') }}" class="nav-link active">Araçlar</a>
+            <a href="{{ url_for('admin_kullanicilar') }}" class="nav-link">Kullanıcılar</a>
+            <a href="{{ url_for('admin_talepler') }}" class="nav-link">Talepler</a>
+            <span class="user-info">👤 {{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Çıkış</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- BAŞLIK BÖLÜMÜ -->
+        <div class="page-header">
+            <h1>🚗 Araçlar Yönetimi</h1>
+            <p>Sistemdeki tüm araçları buradan görüntüleyebilirsiniz</p>
+        </div>
+
+        <!-- ARAÇLAR TABLOSU -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Araç ID</th>
+                        <th>Marka/Model</th>
+                        <th>Yıl</th>
+                        <th>KM</th>
+                        <th>Yakıt/Vites</th>
+                        <th>Renk</th>
+                        <th>Plaka</th>
+                        <th>Fiyat</th>
+                        <th>Durum</th>
+                        <th>Bayi</th>
+                        <th>İlan Tarihi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- VERİTABANINDAN GELEN ARAÇLAR BURADA LİSTELENİR -->
+                    {% for arac in araclar %}
+                    <tr>
+                        <td>#{{ arac.arac_id }}</td>
+                        <td>
+                            <strong>{{ arac.marka }} {{ arac.model }}</strong>
+                        </td>
+                        <td>{{ arac.yil }}</td>
+                        <td>{{ "{:,}".format(arac.kilometre) }} km</td>
+                        <td>{{ arac.yakit }} / {{ arac.vites }}</td>
+                        <td>{{ arac.renk }}</td>
+                        <td>{{ arac.plaka }}</td>
+                        <td><strong>{{ "{:,.2f}".format(arac.fiyat) }} ₺</strong></td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if arac.arac_durumu == 'Satista' else 'warning' }}">
+                                {{ arac.arac_durumu }}
+                            </span>
+                        </td>
+                        <td>{{ arac.bayi_adi }} - {{ arac.sehir }}</td>
+                        <td>{{ arac.ilan_tarihi.strftime('%d.%m.%Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- İSTATİSTİK KARTLARI -->
+        <div class="stats-grid" style="margin-top: 2rem;">
+            <div class="stat-card">
+                <div class="stat-icon">🚗</div>
+                <div class="stat-info">
+                    <h3>{{ araclar|length }}</h3>
+                    <p>Toplam Araç</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

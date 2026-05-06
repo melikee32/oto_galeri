@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taleplerim - Oto Galeri Müşteri</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>🚗 OTO GALERİ</h2>
+        </div>
+        <div class="navbar-menu">
+            <a href="{{ url_for('musteri_dashboard') }}" class="nav-link">Ana Sayfa</a>
+            <a href="{{ url_for('musteri_araclar') }}" class="nav-link">Araçlar</a>
+            <a href="{{ url_for('musteri_taleplerim') }}" class="nav-link active">Taleplerim</a>
+            <span class="user-info">👤 {{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Çıkış</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Taleplerim</h1>
+            <p>Alım ve satım taleplerinizi buradan takip edebilirsiniz</p>
+        </div>
+
+        <!-- Alım Talepleri -->
+        <div class="section">
+            <h2>🛒 Alım Taleplerim</h2>
+            {% if alim_talepleri %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Talep No</th>
+                            <th>Araç</th>
+                            <th>Bayi</th>
+                            <th>Fiyat</th>
+                            <th>Ödeme Tipi</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                            <th>Notlar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for talep in alim_talepleri %}
+                        <tr>
+                            <td>#{{ talep.talep_id }}</td>
+                            <td>
+                                <strong>{{ talep.marka }} {{ talep.model }}</strong><br>
+                                <small>{{ talep.yil }}</small>
+                            </td>
+                            <td>{{ talep.bayi_adi }}</td>
+                            <td><strong>{{ "{:,.2f}".format(talep.fiyat) }} ₺</strong></td>
+                            <td>{{ talep.odeme_tipi }}</td>
+                            <td>
+                                <span class="badge badge-{{ 'warning' if talep.durum == 'Beklemede' else 'info' if talep.durum == 'Gorusuluyor' else 'success' }}">
+                                    {{ talep.durum }}
+                                </span>
+                            </td>
+                            <td>{{ talep.talep_tarihi.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td>{{ talep.notlar if talep.notlar else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>Henüz alım talebiniz bulunmamaktadır.</p>
+                <a href="{{ url_for('musteri_araclar') }}" class="btn btn-primary">Araçları İncele</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Satım Talepleri -->
+        <div class="section">
+            <h2>💰 Satım Taleplerim</h2>
+            {% if satim_talepleri %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Talep No</th>
+                            <th>Araç</th>
+                            <th>Kilometre</th>
+                            <th>Fiyat Beklentisi</th>
+                            <th>Ekspertiz</th>
+                            <th>Bayi</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for talep in satim_talepleri %}
+                        <tr>
+                            <td>#{{ talep.talep_id }}</td>
+                            <td>
+                                <strong>{{ talep.marka }} {{ talep.model }}</strong><br>
+                                <small>{{ talep.yil }}</small>
+                            </td>
+                            <td>{{ "{:,}".format(talep.kilometre) }} km</td>
+                            <td><strong>{{ "{:,.2f}".format(talep.fiyat_beklentisi) }} ₺</strong></td>
+                            <td>{{ talep.ekspertiz }}</td>
+                            <td>{{ talep.bayi_adi }}</td>
+                            <td>
+                                <span class="badge badge-{{ 'warning' if talep.durum == 'Beklemede' else 'info' if talep.durum == 'Inceleniyor' else 'success' }}">
+                                    {{ talep.durum }}
+                                </span>
+                            </td>
+                            <td>{{ talep.talep_tarihi.strftime('%d.%m.%Y %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>Henüz satım talebiniz bulunmamaktadır.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Durum Açıklamaları -->
+        <div class="info-section">
+            <h3>Talep Durumları</h3>
+            <div class="status-info">
+                <div class="status-item">
+                    <span class="badge badge-warning">Beklemede</span>
+                    <p>Talebiniz alındı, en kısa sürede dönüş yapılacak</p>
+                </div>
+                <div class="status-item">
+                    <span class="badge badge-info">Görüşülüyor/İnceleniyor</span>
+                    <p>Talebiniz değerlendiriliyor</p>
+                </div>
+                <div class="status-item">
+                    <span class="badge badge-success">Onaylandı</span>
+                    <p>İşleminiz tamamlandı</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

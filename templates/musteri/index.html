@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteri Paneli - Oto Galeri</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>🚗 OTO GALERİ</h2>
+        </div>
+        <div class="navbar-menu">
+            <a href="{{ url_for('musteri_dashboard') }}" class="nav-link">Ana Sayfa</a>
+            <a href="{{ url_for('musteri_araclar') }}" class="nav-link">Araçlar</a>
+            <a href="{{ url_for('musteri_taleplerim') }}" class="nav-link">Taleplerim</a>
+            <span class="user-info">👤 {{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Çıkış</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="page-header">
+            <h1>Hoş Geldiniz, {{ session.ad }} {{ session.soyad }}!</h1>
+            <p>Hayalinizdeki aracı bulmak için doğru yerdesiniz</p>
+        </div>
+
+        <!-- İstatistik Kartları -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🛒</div>
+                <div class="stat-info">
+                    <h3>{{ alim_talebi_sayisi }}</h3>
+                    <p>Alım Talebim</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-info">
+                    <h3>{{ satim_talebi_sayisi }}</h3>
+                    <p>Satım Talebim</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🚗</div>
+                <div class="stat-info">
+                    <h3>{{ araclar|length }}</h3>
+                    <p>Satışta Araç</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <h3>%100</h3>
+                    <p>Güvenilir</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vitrin Araçlar -->
+        <div class="section">
+            <div class="section-header">
+                <h2>🔥 Öne Çıkan Araçlar</h2>
+                <a href="{{ url_for('musteri_araclar') }}" class="btn btn-primary">Tümünü Gör</a>
+            </div>
+
+            {% if araclar %}
+            <div class="arac-grid">
+                {% for arac in araclar %}
+                <div class="arac-card">
+                    <div class="arac-image">
+                        <img src="https://via.placeholder.com/300x200?text={{ arac.marka }}+{{ arac.model }}" alt="{{ arac.marka }}">
+                        <div class="arac-badge">{{ arac.arac_durumu }}</div>
+                    </div>
+                    <div class="arac-info">
+                        <h3>{{ arac.marka }} {{ arac.model }}</h3>
+                        <div class="arac-details">
+                            <span>📅 {{ arac.yil }}</span>
+                            <span>⚙️ {{ arac.vites }}</span>
+                            <span>⛽ {{ arac.yakit }}</span>
+                        </div>
+                        <div class="arac-location">
+                            <span>📍 {{ arac.bayi_adi }} - {{ arac.sehir }}</span>
+                        </div>
+                        <div class="arac-price">
+                            <strong>{{ "{:,.2f}".format(arac.fiyat) }} ₺</strong>
+                        </div>
+                        <a href="{{ url_for('musteri_talep_olustur', arac_id=arac.arac_id) }}" class="btn btn-primary btn-block">
+                            Talep Oluştur
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>Şu anda satışta araç bulunmamaktadır.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Bilgi Kartları -->
+        <div class="info-boxes">
+            <div class="info-box">
+                <h3>🚗 Araç Al</h3>
+                <p>Geniş araç stoğumuzdan size en uygun aracı bulun ve kolayca satın alın.</p>
+            </div>
+            <div class="info-box">
+                <h3>💰 Araç Sat</h3>
+                <p>Aracınızı hızlıca değerlendirin ve en uygun fiyattan satışa çıkarın.</p>
+            </div>
+            <div class="info-box">
+                <h3>🔒 Güvenli Alışveriş</h3>
+                <p>Tüm işlemleriniz güvenli ve hızlı bir şekilde gerçekleştirilir.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talep Oluştur - Oto Galeri</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>🚗 OTO GALERİ</h2>
+        </div>
+        <div class="navbar-menu">
+            <a href="{{ url_for('musteri_dashboard') }}" class="nav-link">Ana Sayfa</a>
+            <a href="{{ url_for('musteri_araclar') }}" class="nav-link">Araçlar</a>
+            <a href="{{ url_for('musteri_taleplerim') }}" class="nav-link">Taleplerim</a>
+            <span class="user-info">👤 {{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Çıkış</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Alım Talebi Oluştur</h1>
+            <p>Araç için alım talebinizi oluşturun</p>
+        </div>
+
+        <div class="form-container">
+            <!-- Araç Bilgileri -->
+            <div class="info-card">
+                <h2>Araç Bilgileri</h2>
+                <div class="arac-detail-box">
+                    <h3>{{ arac.marka }} {{ arac.model }}</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="label">📅 Yıl:</span>
+                            <span>{{ arac.yil }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">🛣️ Kilometre:</span>
+                            <span>{{ "{:,}".format(arac.kilometre) }} km</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">⚙️ Vites:</span>
+                            <span>{{ arac.vites }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">⛽ Yakıt:</span>
+                            <span>{{ arac.yakit }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">🎨 Renk:</span>
+                            <span>{{ arac.renk }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">📍 Bayi:</span>
+                            <span>{{ arac.bayi_adi }}</span>
+                        </div>
+                    </div>
+                    <div class="price-box">
+                        <strong>Fiyat: {{ "{:,.2f}".format(arac.fiyat) }} ₺</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Talep Formu -->
+            <div class="form-card">
+                <h2>Talep Detayları</h2>
+                <form method="POST">
+                    <div class="form-group">
+                        <label>Ödeme Tipi *</label>
+                        <select name="odeme_tipi" required>
+                            <option value="">Seçiniz</option>
+                            <option value="Pesin">Peşin</option>
+                            <option value="Kredi">Kredi</option>
+                            <option value="Takas">Takas</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notlar / İstekleriniz</label>
+                        <textarea name="notlar" rows="5" placeholder="Aracı görüntülemek istediğiniz gün/saat, sorularınız vb..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{{ url_for('musteri_araclar') }}" class="btn btn-secondary">İptal</a>
+                        <button type="submit" class="btn btn-primary">Talebi Gönder</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satım Talepleri - Bayi Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- ÜST MENÜ ÇUBUĞU -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>🚗 OTO GALERİ - BAYİ</h2>
+        </div>
+        <div class="navbar-menu">
+            <a href="{{ url_for('bayi_dashboard') }}" class="nav-link">Ana Sayfa</a>
+            <a href="{{ url_for('bayi_araclar') }}" class="nav-link">Araçlarım</a>
+            <a href="{{ url_for('bayi_arac_ekle') }}" class="nav-link">Araç Ekle</a>
+            <a href="{{ url_for('bayi_alim_talepleri') }}" class="nav-link">Alım Talepleri</a>
+            <a href="{{ url_for('bayi_satim_talepleri') }}" class="nav-link active">Satım Talepleri</a>
+            <span class="user-info">👨‍💼 {{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Çıkış</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- BAŞLIK BÖLÜMÜ -->
+        <div class="page-header">
+            <h1>💰 Satım Talepleri</h1>
+            <p>Müşterilerin aracını satmak istediği talepler</p>
+        </div>
+
+        <!-- SATIM TALEPLERİ TABLOSU -->
+        {% if talepler %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Talep No</th>
+                        <th>Müşteri</th>
+                        <th>İletişim</th>
+                        <th>Araç Bilgileri</th>
+                        <th>Yıl</th>
+                        <th>Kilometre</th>
+                        <th>Fiyat Beklentisi</th>
+                        <th>Ekspertiz</th>
+                        <th>Durum</th>
+                        <th>Tarih</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- MÜŞTERİLERİN SATMAK İSTEDİĞİ ARAÇLAR -->
+                    {% for talep in talepler %}
+                    <tr>
+                        <td>#{{ talep.talep_id }}</td>
+                        <td><strong>{{ talep.ad }} {{ talep.soyad }}</strong></td>
+                        <td>
+                            📧 {{ talep.email }}<br>
+                            📞 {{ talep.telefon }}
+                        </td>
+                        <td>
+                            <strong>{{ talep.marka }} {{ talep.model }}</strong>
+                        </td>
+                        <td>{{ talep.yil }}</td>
+                        <td>{{ "{:,}".format(talep.kilometre) }} km</td>
+                        <td><strong>{{ "{:,.2f}".format(talep.fiyat_beklentisi) }} ₺</strong></td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if talep.ekspertiz == 'Var' else 'warning' }}">
+                                {{ talep.ekspertiz }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'warning' if talep.durum == 'Beklemede' else 'info' if talep.durum == 'Inceleniyor' else 'success' }}">
+                                {{ talep.durum }}
+                            </span>
+                        </td>
+                        <td>{{ talep.talep_tarihi.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>
+                            <!-- DURUM DEĞİŞTİRME FORMU -->
+                            <form method="POST" action="{{ url_for('bayi_satim_talep_duzenle', talep_id=talep.talep_id) }}" style="display: inline;">
+                                <select name="durum" onchange="this.form.submit()" class="mini-select">
+                                    <option value="Beklemede" {{ 'selected' if talep.durum == 'Beklemede' }}>Beklemede</option>
+                                    <option value="Inceleniyor" {{ 'selected' if talep.durum == 'Inceleniyor' }}>İnceleniyor</option>
+                                    <option value="Teklif Verildi" {{ 'selected' if talep.durum == 'Teklif Verildi' }}>Teklif Verildi</option>
+                                    <option value="Satin Alindi" {{ 'selected' if talep.durum == 'Satin Alindi' }}>Satın Alındı</option>
+                                    <option value="Iptal" {{ 'selected' if talep.durum == 'Iptal' }}>İptal</option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <!-- TALEP YOKSA BU MESAJ GÖSTERİLİR -->
+        <div class="empty-state">
+            <h3>Henüz satım talebi bulunmamaktadır</h3>
+            <p>Müşteriler aracını satmak istediğinde talepler burada görünecektir</p>
+        </div>
+        {% endif %}
+
+        <!-- İSTATİSTİK KARTLARI -->
+        <div class="stats-grid" style="margin-top: 2rem;">
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-info">
+                    <h3>{{ talepler|length }}</h3>
+                    <p>Toplam Talep</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-info">
+                    <h3>{{ talepler|selectattr('durum', 'equalto', 'Beklemede')|list|length }}</h3>
+                    <p>Bekleyen</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔍</div>
+                <div class="stat-info">
+                    <h3>{{ talepler|selectattr('durum', 'equalto', 'Inceleniyor')|list|length }}</h3>
+                    <p>İnceleniyor</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <h3>{{ talepler|selectattr('durum', 'equalto', 'Satin Alindi')|list|length }}</h3>
+                    <p>Satın Alındı</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- BİLGİLENDİRME -->
+        <div class="info-section">
+            <h3>💡 Satım Talepleri Hakkında</h3>
+            <div class="info-box">
+                <p><strong>Beklemede:</strong> Yeni gelen talep, henüz incelenmedi</p>
+                <p><strong>İnceleniyor:</strong> Araç incelemeye alındı</p>
+                <p><strong>Teklif Verildi:</strong> Müşteriye fiyat teklifi verildi</p>
+                <p><strong>Satın Alındı:</strong> Araç satın alındı ve stoğa eklendi</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

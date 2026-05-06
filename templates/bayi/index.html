@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayi Panel - Oto Galeri</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>🚗 {{ bayi.bayi_adi }}</h2>
+        </div>
+        <div class="navbar-menu">
+            <span class="user-info">👨‍💼 {{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Çıkış</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="page-header">
+            <h1>Bayi Yönetim Paneli</h1>
+            <p>📍 {{ bayi.sehir }} - {{ bayi.adres }}</p>
+        </div>
+
+        <!-- İstatistik Kartları -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🚗</div>
+                <div class="stat-info">
+                    <h3>{{ arac_sayisi }}</h3>
+                    <p>Stokta Araç</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🛒</div>
+                <div class="stat-info">
+                    <h3>{{ bekleyen_alim }}</h3>
+                    <p>Alım Talebi</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-info">
+                    <h3>{{ bekleyen_satim }}</h3>
+                    <p>Satım Talebi</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📞</div>
+                <div class="stat-info">
+                    <h3>{{ bayi.telefon }}</h3>
+                    <p>İletişim</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hızlı Menü - HER KART İŞLEVSEL! -->
+        <div class="quick-menu">
+            <h2>Hızlı İşlemler</h2>
+            <div class="menu-grid">
+                <!-- ARAÇLARIM KARTINA TIKLA -> Araçlar sayfasına git -->
+                <a href="{{ url_for('bayi_araclar') }}" class="menu-card">
+                    <div class="menu-icon">🚗</div>
+                    <h3>Araçlarım</h3>
+                    <p>Stoktaki araçları gör</p>
+                </a>
+
+                <!-- ARAÇ EKLE KARTINA TIKLA -> Araç ekleme formuna git -->
+                <a href="{{ url_for('bayi_arac_ekle') }}" class="menu-card">
+                    <div class="menu-icon">➕</div>
+                    <h3>Araç Ekle</h3>
+                    <p>Yeni araç ekle</p>
+                </a>
+
+                <!-- ALIM TALEPLERİ KARTINA TIKLA -> Alım talepleri sayfasına git -->
+                <a href="{{ url_for('bayi_alim_talepleri') }}" class="menu-card">
+                    <div class="menu-icon">🛒</div>
+                    <h3>Alım Talepleri</h3>
+                    <p>Müşteri talepleri</p>
+                </a>
+
+                <!-- SATIM TALEPLERİ KARTINA TIKLA -> Satım talepleri sayfasına git -->
+                <a href="{{ url_for('bayi_satim_talepleri') }}" class="menu-card">
+                    <div class="menu-icon">💰</div>
+                    <h3>Satım Talepleri</h3>
+                    <p>Araç alım talepleri</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Bayi Bilgileri -->
+        <div class="info-section">
+            <h2>Bayi Bilgileri</h2>
+            <div class="info-card">
+                <p><strong>Bayi Adı:</strong> {{ bayi.bayi_adi }}</p>
+                <p><strong>Şehir:</strong> {{ bayi.sehir }}</p>
+                <p><strong>Adres:</strong> {{ bayi.adres }}</p>
+                <p><strong>Telefon:</strong> {{ bayi.telefon }}</p>
+                <p><strong>Email:</strong> {{ bayi.email }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

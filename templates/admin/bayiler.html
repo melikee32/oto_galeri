@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayiler - Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="admin-layout">
+    <!-- SIDEBAR -->
+    <div class="admin-sidebar">
+        <div class="sidebar-header">
+            <h2>🚗 OTO GALERİ</h2>
+            <p class="sidebar-role">👑 Admin Panel</p>
+        </div>
+        
+        <nav class="sidebar-menu">
+            <a href="{{ url_for('admin_dashboard') }}" class="sidebar-item">
+                <span class="sidebar-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('admin_bayiler') }}" class="sidebar-item active">
+                <span class="sidebar-icon">🏪</span>
+                <span>Bayiler</span>
+            </a>
+            <a href="{{ url_for('admin_araclar') }}" class="sidebar-item">
+                <span class="sidebar-icon">🚗</span>
+                <span>Araçlar</span>
+            </a>
+            <a href="{{ url_for('admin_kullanicilar') }}" class="sidebar-item">
+                <span class="sidebar-icon">👥</span>
+                <span>Kullanıcılar</span>
+            </a>
+            <a href="{{ url_for('admin_talepler') }}" class="sidebar-item">
+                <span class="sidebar-icon">📋</span>
+                <span>Talepler</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="user-avatar">{{ session.ad[0] }}{{ session.soyad[0] }}</div>
+                <div class="user-details">
+                    <strong>{{ session.ad }} {{ session.soyad }}</strong>
+                    <small>Admin</small>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="sidebar-logout">
+                <span class="sidebar-icon">🚪</span>
+                <span>Çıkış Yap</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ANA İÇERİK -->
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <h1>🏪 Bayiler Yönetimi</h1>
+        </div>
+
+        <div class="admin-main">
+
+            <!-- BAYİLER TABLOSU -->
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Bayi ID</th>
+                            <th>Bayi Adı</th>
+                            <th>Şehir</th>
+                            <th>Adres</th>
+                            <th>Telefon</th>
+                            <th>Email</th>
+                            <th>Araç Sayısı</th>
+                            <th>Personel Sayısı</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bayi in bayiler %}
+                        <tr>
+                            <td>#{{ bayi.bayi_id }}</td>
+                            <td><strong>{{ bayi.bayi_adi }}</strong></td>
+                            <td>📍 {{ bayi.sehir }}</td>
+                            <td>{{ bayi.adres }}</td>
+                            <td>📞 {{ bayi.telefon }}</td>
+                            <td>📧 {{ bayi.email }}</td>
+                            <td>
+                                <span class="badge badge-info">{{ bayi.arac_sayisi }} Araç</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-success">{{ bayi.personel_sayisi }} Personel</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

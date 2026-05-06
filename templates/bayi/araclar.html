@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Araçlarım - Bayi Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- ÜST MENÜ ÇUBUĞU -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>🚗 OTO GALERİ - BAYİ</h2>
+        </div>
+        <div class="navbar-menu">
+            <a href="{{ url_for('bayi_dashboard') }}" class="nav-link">Ana Sayfa</a>
+            <a href="{{ url_for('bayi_araclar') }}" class="nav-link active">Araçlarım</a>
+            <a href="{{ url_for('bayi_arac_ekle') }}" class="nav-link">Araç Ekle</a>
+            <a href="{{ url_for('bayi_alim_talepleri') }}" class="nav-link">Alım Talepleri</a>
+            <a href="{{ url_for('bayi_satim_talepleri') }}" class="nav-link">Satım Talepleri</a>
+            <span class="user-info">👨‍💼 {{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Çıkış</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- BAŞLIK BÖLÜMÜ -->
+        <div class="page-header">
+            <h1>🚗 Stoktaki Araçlarım</h1>
+            <p>Bayinize ait tüm araçlar burada listelenir</p>
+        </div>
+
+        <!-- ARAÇLAR TABLOSU -->
+        {% if araclar %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Araç ID</th>
+                        <th>Marka/Model</th>
+                        <th>Yıl</th>
+                        <th>KM</th>
+                        <th>Yakıt</th>
+                        <th>Vites</th>
+                        <th>Renk</th>
+                        <th>Plaka</th>
+                        <th>Fiyat</th>
+                        <th>Durum</th>
+                        <th>İlan Tarihi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- BAYİNİN ARAÇLARI BURADA LİSTELENİR -->
+                    {% for arac in araclar %}
+                    <tr>
+                        <td>#{{ arac.arac_id }}</td>
+                        <td>
+                            <strong>{{ arac.marka }} {{ arac.model }}</strong>
+                        </td>
+                        <td>{{ arac.yil }}</td>
+                        <td>{{ "{:,}".format(arac.kilometre) }} km</td>
+                        <td>{{ arac.yakit }}</td>
+                        <td>{{ arac.vites }}</td>
+                        <td>{{ arac.renk }}</td>
+                        <td>{{ arac.plaka }}</td>
+                        <td><strong>{{ "{:,.2f}".format(arac.fiyat) }} ₺</strong></td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if arac.arac_durumu == 'Satista' else 'warning' }}">
+                                {{ arac.arac_durumu }}
+                            </span>
+                        </td>
+                        <td>{{ arac.ilan_tarihi.strftime('%d.%m.%Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <!-- ARAÇ YOKSA BU MESAJ GÖSTERİLİR -->
+        <div class="empty-state">
+            <h3>Henüz araç eklemediniz</h3>
+            <p>Yeni araç eklemek için aşağıdaki butona tıklayın</p>
+            <a href="{{ url_for('bayi_arac_ekle') }}" class="btn btn-primary">➕ Yeni Araç Ekle</a>
+        </div>
+        {% endif %}
+
+        <!-- İSTATİSTİK KARTLARI -->
+        <div class="stats-grid" style="margin-top: 2rem;">
+            <div class="stat-card">
+                <div class="stat-icon">🚗</div>
+                <div class="stat-info">
+                    <h3>{{ araclar|length }}</h3>
+                    <p>Toplam Araç</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <h3>{{ araclar|selectattr('arac_durumu', 'equalto', 'Satista')|list|length }}</h3>
+                    <p>Satışta</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-info">
+                    <h3>{{ araclar|selectattr('arac_durumu', 'equalto', 'Rezerve')|list|length }}</h3>
+                    <p>Rezerve</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
