@@ -175,7 +175,7 @@ body {
 }
 
 /* ============================================
-   TABS
+   TABS - TAB BUTONLARI
    ============================================ */
 .tabs {
     background: white;
@@ -217,7 +217,7 @@ body {
 }
 
 /* ============================================
-   CONTENT
+   CONTENT - TAB İÇERİĞİ
    ============================================ */
 .tab-content {
     padding: 32px;
@@ -238,7 +238,7 @@ body {
 }
 
 /* ============================================
-   TABLE
+   TABLE - VERI TABLOSU
    ============================================ */
 table {
     width: 100%;
@@ -252,7 +252,7 @@ table {
 table th {
     padding: 14px 16px;
     text-align: left;
-    background: #2563eb;  /* TEMİZ MAVİ */
+    background: #2563eb;
     color: white;
     font-weight: 600;
     font-size: 13px;
@@ -275,13 +275,15 @@ table tr:last-child td {
 }
 
 /* ============================================
-   FORM
+   FORM - FORM ELEMANLARı
    ============================================ */
 .form {
     max-width: 700px;
 }
 
-.form input, .form select, .form textarea {
+.form input, 
+.form select, 
+.form textarea {
     width: 100%;
     padding: 13px 16px;
     margin-bottom: 16px;
@@ -293,7 +295,9 @@ table tr:last-child td {
     background: #f8f9fa;
 }
 
-.form input:focus, .form select:focus, .form textarea:focus {
+.form input:focus, 
+.form select:focus, 
+.form textarea:focus {
     outline: none;
     border-color: #667eea;
     background: white;
@@ -337,7 +341,7 @@ table tr:last-child td {
 }
 
 /* ============================================
-   ALERT
+   ALERT - UYARI MESAJLARI
    ============================================ */
 .alert {
     padding: 16px 24px;
@@ -367,7 +371,7 @@ table tr:last-child td {
 }
 
 /* ============================================
-   INFO
+   INFO - BİLGİ KUTUSU
    ============================================ */
 .info {
     padding: 16px 24px;
@@ -384,7 +388,7 @@ table tr:last-child td {
 }
 
 /* ============================================
-   SELECT DROPDOWN
+   SELECT - DÖN MENÜSÜ ÖKÜMÜ
    ============================================ */
 select {
     cursor: pointer;
@@ -396,7 +400,194 @@ select {
 }
 
 /* ============================================
-   RESPONSIVE
+   BUTTON STYLES - ADMİN BUTONLARI
+   ============================================ */
+.btn {
+    padding: 10px 16px;
+    margin: 6px 6px 6px 0;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Yeşil - Düzenle Butonu */
+.btn-edit {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.btn-edit:hover {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Kırmızı - Sil Butonu */
+.btn-delete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.btn-delete:hover {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Mavi - Ekle Butonu */
+.btn-add {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    padding: 12px 24px;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.btn-add:hover {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* ============================================
+   MODAL STYLES - AÇILAN PENCERELER
+   ============================================ */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+    overflow-y: auto;
+}
+
+/* Modal Açılış Animasyonu - Kaybolma Efekti */
+@keyframes fadeIn {
+    from { 
+        opacity: 0;
+    }
+    to { 
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 32px;
+    border: none;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease;
+}
+
+/* Modal Slide Down Animasyonu - Yukarıdan İnme Efekti */
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h2 {
+    color: #212529;
+    margin-bottom: 24px;
+    font-size: 24px;
+    font-weight: 700;
+    border-bottom: 3px solid #667eea;
+    padding-bottom: 12px;
+}
+
+/* Modal Kapatma Butonu (X) */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 20px;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    transform: scale(1.2);
+}
+
+/* ============================================
+   MODAL FORM STYLES - MODAL İÇİ FORM
+   ============================================ */
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
+    padding: 13px 16px;
+    margin: 12px 0;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+/* Modal İçindeki Gönder Butonu */
+.modal-content button {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    margin-top: 16px;
+}
+
+.modal-content button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* ============================================
+   TABLO İŞLEM SÜTUNU - SON KOLON
+   ============================================ */
+table td:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 16px;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - MOBİL UYUM
    ============================================ */
 @media (max-width: 768px) {
     .header {
@@ -424,11 +615,37 @@ select {
     }
     
     table {
+        font-size: 12px;
+    }
+    
+    table th,
+    table td {
+        padding: 10px 8px;
+    }
+    
+    .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        margin: 4px 2px 4px 0;
+    }
+    
+    .btn-add {
+        padding: 10px 16px;
         font-size: 13px;
     }
     
-    table th, table td {
-        padding: 10px;
+    .modal-content {
+        width: 95%;
+        padding: 24px;
+        margin: 30% auto;
+    }
+    
+    .modal-content h2 {
+        font-size: 20px;
+    }
+    
+    .close {
+        font-size: 24px;
     }
     
     .login-box {
@@ -438,7 +655,7 @@ select {
 }
 
 /* ============================================
-   SCROLLBAR
+   SCROLLBAR STYLE - KAYDIRMA ÇUBUĞu
    ============================================ */
 ::-webkit-scrollbar {
     width: 10px;
@@ -458,6 +675,7 @@ select {
     background: linear-gradient(135deg, #5568d3 0%, #6d28d9 100%);
 }
 
+/* METIN SEÇİMİ STİLİ */
 ::selection {
     background: #c7d2fe;
     color: #3730a3;

@@ -4,72 +4,202 @@
     <meta charset="UTF-8">
     <title>Admin Panel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); }
+        .modal-content { background:#fff; margin:3% auto; padding:30px; border-radius:12px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto; }
+        .close { color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer; }
+        .close:hover { color:#000; }
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;
+        }
+        .modal-content button { width:100%; padding:12px; background:#667eea; color:white; border:none; border-radius:6px; cursor:pointer; margin-top:10px; font-weight:600; }
+        .header span { cursor:pointer; }
+        .btn-edit { background:#10b981; color:white; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; margin:2px; }
+        .btn-delete { background:#ef4444; color:white; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; margin:2px; }
+        .btn-add { background:#2563eb; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; margin-bottom:15px; font-weight:600; }
+        .btn-key { background:#f59e0b; color:white; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; margin:2px; }
+        .section-baslik { color:#667eea; font-weight:700; margin:15px 0 8px 0; padding-bottom:6px; border-bottom:2px solid #e9ecef; }
+    </style>
 </head>
 <body>
     <div class="header">
-        <h1>👑 ADMIN PANEL</h1>
+        <h1>ADMIN PANEL</h1>
         <div>
-            <span>{{ session.ad }} {{ session.soyad }}</span>
-            <a href="{{ url_for('logout') }}">Çıkış</a>
+            <span onclick="openProfilModal()">{{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}">Cikis</a>
         </div>
     </div>
-    
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('bayiler')">🏪 Bayiler</button>
-        <button class="tab-btn" onclick="showTab('araclar')">🚗 Araçlar</button>
-        <button class="tab-btn" onclick="showTab('kullanicilar')">👥 Kullanıcılar</button>
-        <button class="tab-btn" onclick="showTab('alim')">🛒 Alım Talepleri</button>
-        <button class="tab-btn" onclick="showTab('satim')">💰 Satım Talepleri</button>
+
+    <!-- PROFIL MODAL -->
+    <div id="profilModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeProfilModal()">&times;</span>
+            <h2>Profil Bilgileri</h2>
+            <form method="POST" action="{{ url_for('profil_guncelle') }}">
+                <label>Ad Soyad:</label>
+                <input type="text" id="profil_ad_soyad" readonly style="background:#e9ecef;">
+                <label>Email:</label>
+                <input type="email" name="profil_email" id="profil_email" required>
+                <label>Telefon:</label>
+                <input type="text" name="profil_telefon" id="profil_telefon" required>
+                <label>Yeni Sifre (bos birakirsa degismez):</label>
+                <input type="password" name="profil_yeni_sifre">
+                <label>Sifreyi Onayla:</label>
+                <input type="password" name="profil_yeni_sifre_confirm">
+                <button type="submit" style="background:#10b981;">Kaydet</button>
+            </form>
+        </div>
     </div>
-    
-    <!-- BAYİLER -->
+
+    <!-- BAYI EKLE MODAL -->
+    <div id="addBayiModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addBayiModal')">&times;</span>
+            <h2>Yeni Bayi Ekle</h2>
+            <form method="POST">
+                <input type="hidden" name="bayi_ekle" value="1">
+
+                <div class="section-baslik">Bayi Bilgileri</div>
+                <input type="text" name="bayi_adi" placeholder="Bayi Adi" required>
+                <input type="text" name="sehir" placeholder="Sehir" required>
+                <input type="text" name="adres" placeholder="Adres">
+                <input type="text" name="telefon" placeholder="Bayi Telefon" required>
+                <input type="email" name="email" placeholder="Bayi Email" required>
+
+                <div class="section-baslik">Yetkili Kullanici (Bayinin sisteme giris yapacagi hesap)</div>
+                <input type="text" name="yetkili_ad" placeholder="Yetkili Ad" required>
+                <input type="text" name="yetkili_soyad" placeholder="Yetkili Soyad" required>
+                <input type="email" name="yetkili_email" placeholder="Yetkili Email (giris icin)" required>
+                <input type="text" name="yetkili_telefon" placeholder="Yetkili Telefon" required>
+                <input type="password" name="yetkili_sifre" placeholder="Sifre" required>
+
+                <button type="submit">Bayi ve Yetkilisini Ekle</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- BAYI DUZENLE MODAL -->
+    <div id="editBayiModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editBayiModal')">&times;</span>
+            <h2>Bayi Duzenle</h2>
+            <form method="POST">
+                <input type="hidden" name="bayi_guncelle" value="1">
+                <input type="hidden" name="bayi_id" id="edit_bayi_id">
+                <input type="text" name="bayi_adi" id="edit_bayi_adi" required>
+                <input type="text" name="sehir" id="edit_sehir" required>
+                <input type="text" name="telefon" id="edit_bayi_telefon" required>
+                <input type="email" name="email" id="edit_bayi_email" required>
+                <button type="submit">Guncelle</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- KULLANICI DUZENLE MODAL -->
+    <div id="editKullaniciModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editKullaniciModal')">&times;</span>
+            <h2>Kullanici Duzenle</h2>
+            <form method="POST">
+                <input type="hidden" name="kullanici_guncelle" value="1">
+                <input type="hidden" name="kullanici_id" id="edit_kullanici_id">
+                <input type="text" name="ad" id="edit_ad" required>
+                <input type="text" name="soyad" id="edit_soyad" required>
+                <input type="text" name="telefon" id="edit_kul_telefon" required>
+                <button type="submit">Guncelle</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SIFRE SIFIRLA MODAL -->
+    <div id="sifreModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('sifreModal')">&times;</span>
+            <h2>Sifre Sifirla</h2>
+            <form method="POST">
+                <input type="hidden" name="sifre_sifirla" value="1">
+                <input type="hidden" name="kullanici_id" id="sifre_kullanici_id">
+                <label id="sifre_kullanici_label" style="font-weight:bold;"></label>
+                <input type="text" name="yeni_sifre" id="yeni_sifre_input" placeholder="Yeni Sifre" required>
+                <button type="button" onclick="randomSifre()" style="background:#17a2b8; margin-bottom:10px;">Random Sifre Olustur</button>
+                <button type="submit" style="background:#10b981;">Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('bayiler', this)">Bayiler</button>
+        <button class="tab-btn" onclick="showTab('araclar', this)">Araclar</button>
+        <button class="tab-btn" onclick="showTab('kullanicilar', this)">Kullanicilar</button>
+        <button class="tab-btn" onclick="showTab('alim', this)">Alim Talepleri</button>
+        <button class="tab-btn" onclick="showTab('satim', this)">Satim Talepleri</button>
+    </div>
+
+    <!-- BAYILER -->
     <div id="bayiler" class="tab-content">
         <h2>Bayiler</h2>
-        <table>
-            <tr>
-                <th>ID</th><th>Bayi Adı</th><th>Şehir</th><th>Telefon</th><th>Araç</th><th>Personel</th>
-            </tr>
+        <button class="btn-add" onclick="openModal('addBayiModal')">+ Yeni Bayi Ekle</button>
+        <table border="1">
+            <tr><th>ID</th><th>Bayi Adi</th><th>Sehir</th><th>Telefon</th><th>Email</th><th>Arac Sayisi</th><th>Islem</th></tr>
             {% for b in bayiler %}
             <tr>
                 <td>{{ b.bayi_id }}</td>
                 <td>{{ b.bayi_adi }}</td>
-                <td>{{ b.sehir }}</td>
+                <td>{{ b.sehir or '-' }}</td>
                 <td>{{ b.telefon }}</td>
+                <td>{{ b.email or '-' }}</td>
                 <td>{{ b.arac_sayisi }}</td>
-                <td>{{ b.personel_sayisi }}</td>
+                <td>
+                    <button class="btn-edit" onclick="editBayi({{ b.bayi_id }}, '{{ b.bayi_adi }}', '{{ b.sehir or '' }}', '{{ b.telefon }}', '{{ b.email or '' }}')">Duzenle</button>
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('Bayi ve tum verileri silinecek. Emin misin?');">
+                        <input type="hidden" name="bayi_sil" value="1">
+                        <input type="hidden" name="bayi_id" value="{{ b.bayi_id }}">
+                        <button class="btn-delete" type="submit">Sil</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </table>
     </div>
-    
-    <!-- ARAÇLAR -->
+
+    <!-- ARACLAR -->
     <div id="araclar" class="tab-content" style="display:none">
-        <h2>Araçlar</h2>
-        <table>
-            <tr>
-                <th>ID</th><th>Marka/Model</th><th>Yıl</th><th>KM</th><th>Fiyat</th><th>Durum</th><th>Bayi</th>
-            </tr>
+        <h2>Tum Araclar</h2>
+        <table border="1">
+            <tr><th>ID</th><th>Marka/Model</th><th>Yil</th><th>Fiyat</th><th>Durum</th><th>Bayi</th><th>Islem</th></tr>
             {% for a in araclar %}
             <tr>
                 <td>{{ a.arac_id }}</td>
                 <td>{{ a.marka }} {{ a.model }}</td>
                 <td>{{ a.yil }}</td>
-                <td>{{ a.kilometre }}</td>
-                <td>{{ a.fiyat }} ₺</td>
+                <td>{{ a.fiyat }} TL</td>
                 <td>{{ a.arac_durumu }}</td>
                 <td>{{ a.bayi_adi }}</td>
+                <td>
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('Silinsin mi?');">
+                        <input type="hidden" name="arac_sil" value="1">
+                        <input type="hidden" name="arac_id" value="{{ a.arac_id }}">
+                        <button class="btn-delete" type="submit">Sil</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </table>
     </div>
-    
+
     <!-- KULLANICILAR -->
     <div id="kullanicilar" class="tab-content" style="display:none">
-        <h2>Kullanıcılar</h2>
-        <table>
-            <tr>
-                <th>ID</th><th>Ad Soyad</th><th>Email</th><th>Telefon</th><th>Yetki</th>
-            </tr>
+        <h2>Kullanicilar</h2>
+        <table border="1">
+            <tr><th>ID</th><th>Ad Soyad</th><th>Email</th><th>Telefon</th><th>Yetki</th><th>Islem</th></tr>
             {% for k in kullanicilar %}
             <tr>
                 <td>{{ k.kullanici_id }}</td>
@@ -77,24 +207,31 @@
                 <td>{{ k.email }}</td>
                 <td>{{ k.telefon }}</td>
                 <td>{{ k.yetki }}</td>
+                <td>
+                    <button class="btn-edit" onclick="editKullanici({{ k.kullanici_id }}, '{{ k.ad }}', '{{ k.soyad }}', '{{ k.telefon }}')">Duzenle</button>
+                    <button class="btn-key" onclick="sifreSifirla({{ k.kullanici_id }}, '{{ k.ad }} {{ k.soyad }}')">Sifre</button>
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('Silinsin mi?');">
+                        <input type="hidden" name="kullanici_sil" value="1">
+                        <input type="hidden" name="kullanici_id" value="{{ k.kullanici_id }}">
+                        <button class="btn-delete" type="submit">Sil</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </table>
     </div>
-    
-    <!-- ALIM TALEPLERİ -->
+
+    <!-- ALIM TALEPLERI -->
     <div id="alim" class="tab-content" style="display:none">
-        <h2>Alım Talepleri</h2>
-        <table>
-            <tr>
-                <th>ID</th><th>Müşteri</th><th>Araç</th><th>Fiyat</th><th>Ödeme</th><th>Durum</th><th>Bayi</th>
-            </tr>
+        <h2>Tum Alim Talepleri</h2>
+        <table border="1">
+            <tr><th>ID</th><th>Musteri</th><th>Arac</th><th>Fiyat</th><th>Odeme</th><th>Durum</th><th>Bayi</th></tr>
             {% for t in alim_talepleri %}
             <tr>
-                <td>{{ t.talep_id }}</td>
+                <td>{{ t.alim_talep_id }}</td>
                 <td>{{ t.ad }} {{ t.soyad }}</td>
-                <td>{{ t.marka }} {{ t.model }} ({{ t.yil }})</td>
-                <td>{{ t.fiyat }} ₺</td>
+                <td>{{ t.marka }} {{ t.model }}</td>
+                <td>{{ t.fiyat }} TL</td>
                 <td>{{ t.odeme_tipi }}</td>
                 <td>{{ t.durum }}</td>
                 <td>{{ t.bayi_adi }}</td>
@@ -102,41 +239,75 @@
             {% endfor %}
         </table>
     </div>
-    
-    <!-- SATIM TALEPLERİ -->
+
+    <!-- SATIM TALEPLERI -->
     <div id="satim" class="tab-content" style="display:none">
-        <h2>Satım Talepleri</h2>
-        <table>
-            <tr>
-                <th>ID</th><th>Müşteri</th><th>Araç</th><th>KM</th><th>Fiyat Beklentisi</th><th>Ekspertiz</th><th>Durum</th><th>Bayi</th>
-            </tr>
+        <h2>Tum Satim Talepleri</h2>
+        <table border="1">
+            <tr><th>ID</th><th>Musteri</th><th>Arac</th><th>Fiyat Bek.</th><th>Durum</th><th>Bayi</th></tr>
             {% for t in satim_talepleri %}
             <tr>
-                <td>{{ t.talep_id }}</td>
+                <td>{{ t.satim_talep_id }}</td>
                 <td>{{ t.ad }} {{ t.soyad }}</td>
-                <td>{{ t.marka }} {{ t.model }} ({{ t.yil }})</td>
-                <td>{{ t.kilometre }}</td>
-                <td>{{ t.fiyat_beklentisi }} ₺</td>
-                <td>{{ t.ekspertiz }}</td>
+                <td>{{ t.marka }} {{ t.model }}</td>
+                <td>{{ t.fiyat_beklentisi }} TL</td>
                 <td>{{ t.durum }}</td>
                 <td>{{ t.bayi_adi }}</td>
             </tr>
             {% endfor %}
         </table>
     </div>
-    
+
     <script>
-        function showTab(tab) {
+        function showTab(tab, btn) {
             var tabs = document.getElementsByClassName('tab-content');
-            for (var i = 0; i < tabs.length; i++) {
-                tabs[i].style.display = 'none';
-            }
+            for (var i=0; i<tabs.length; i++) tabs[i].style.display='none';
             var btns = document.getElementsByClassName('tab-btn');
-            for (var i = 0; i < btns.length; i++) {
-                btns[i].classList.remove('active');
-            }
-            document.getElementById(tab).style.display = 'block';
-            event.target.classList.add('active');
+            for (var i=0; i<btns.length; i++) btns[i].classList.remove('active');
+            document.getElementById(tab).style.display='block';
+            btn.classList.add('active');
+        }
+        function openModal(id) { document.getElementById(id).style.display='block'; }
+        function closeModal(id) { document.getElementById(id).style.display='none'; }
+
+        function openProfilModal() {
+            document.getElementById('profil_ad_soyad').value='{{ session.ad }} {{ session.soyad }}';
+            document.getElementById('profil_email').value='{{ session.email or "" }}';
+            document.getElementById('profil_telefon').value='{{ session.telefon or "" }}';
+            document.getElementById('profilModal').style.display='block';
+        }
+        function closeProfilModal() { document.getElementById('profilModal').style.display='none'; }
+
+        function editBayi(id, adi, sehir, tel, email) {
+            document.getElementById('edit_bayi_id').value=id;
+            document.getElementById('edit_bayi_adi').value=adi;
+            document.getElementById('edit_sehir').value=sehir;
+            document.getElementById('edit_bayi_telefon').value=tel;
+            document.getElementById('edit_bayi_email').value=email;
+            openModal('editBayiModal');
+        }
+        function editKullanici(id, ad, soyad, tel) {
+            document.getElementById('edit_kullanici_id').value=id;
+            document.getElementById('edit_ad').value=ad;
+            document.getElementById('edit_soyad').value=soyad;
+            document.getElementById('edit_kul_telefon').value=tel;
+            openModal('editKullaniciModal');
+        }
+        function sifreSifirla(id, ad) {
+            document.getElementById('sifre_kullanici_id').value=id;
+            document.getElementById('sifre_kullanici_label').textContent=ad;
+            document.getElementById('yeni_sifre_input').value='';
+            openModal('sifreModal');
+        }
+        function randomSifre() {
+            const chars='ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+            let p='';
+            for(let i=0;i<8;i++) p+=chars.charAt(Math.floor(Math.random()*chars.length));
+            document.getElementById('yeni_sifre_input').value=p;
+        }
+        window.onclick=function(e) {
+            var modals=document.getElementsByClassName('modal');
+            for(var i=0;i<modals.length;i++) if(e.target==modals[i]) modals[i].style.display='none';
         }
     </script>
 </body>

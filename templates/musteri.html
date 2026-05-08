@@ -2,18 +2,122 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Müşteri Panel</title>
+    <title>Musteri Panel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); }
+        .modal-content { background:#fff; margin:5% auto; padding:30px; border-radius:12px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto; }
+        .close { color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer; }
+        .close:hover { color:#000; }
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;
+        }
+        .modal-content button { width:100%; padding:12px; background:#667eea; color:white; border:none; border-radius:6px; cursor:pointer; margin-top:10px; }
+        .header span { cursor:pointer; }
+        .arac-card {
+            display:inline-block; width:calc(33% - 20px); margin:10px;
+            background:white; border-radius:12px; padding:20px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:all 0.3s;
+            vertical-align:top;
+        }
+        .arac-card:hover { transform:translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.15); }
+        .arac-card h3 { color:#667eea; margin-bottom:10px; }
+        .arac-card .fiyat { font-size:20px; font-weight:bold; color:#10b981; margin:10px 0; }
+        .arac-card button { background:#667eea; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; width:100%; margin-top:10px; }
+        .label { display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+        .label-bekleme { background:#fef3c7; color:#92400e; }
+        .label-onayli { background:#d1fae5; color:#065f46; }
+        .label-red { background:#fee2e2; color:#991b1b; }
+    </style>
 </head>
 <body>
     <div class="header">
-        <h1>🚗 MÜŞTERİ PANEL</h1>
+        <h1>MUSTERI PANEL</h1>
         <div>
-            <span>{{ session.ad }} {{ session.soyad }}</span>
-            <a href="{{ url_for('logout') }}">Çıkış</a>
+            <span onclick="openProfilModal()">{{ session.ad }} {{ session.soyad }}</span>
+            <a href="{{ url_for('logout') }}">Cikis</a>
         </div>
     </div>
-    
+
+    <!-- PROFIL MODAL -->
+    <div id="profilModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('profilModal')">&times;</span>
+            <h2>Profil Bilgileri</h2>
+            <form method="POST" action="{{ url_for('profil_guncelle') }}">
+                <label>Ad Soyad:</label>
+                <input type="text" id="profil_ad_soyad" readonly style="background:#e9ecef;">
+                <label>Email:</label>
+                <input type="email" name="profil_email" id="profil_email" required>
+                <label>Telefon:</label>
+                <input type="text" name="profil_telefon" id="profil_telefon" required>
+                <label>Yeni Sifre (bos birakirsa degismez):</label>
+                <input type="password" name="profil_yeni_sifre">
+                <label>Sifreyi Onayla:</label>
+                <input type="password" name="profil_yeni_sifre_confirm">
+                <button type="submit" style="background:#10b981;">Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ALIM TALEBI MODAL -->
+    <div id="alimModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('alimModal')">&times;</span>
+            <h2>Arac Alim Talebi</h2>
+            <form method="POST">
+                <input type="hidden" name="alim_talep" value="1">
+                <input type="hidden" name="arac_id" id="alim_arac_id">
+                <label id="alim_arac_bilgi" style="font-weight:bold; color:#667eea;"></label>
+                <label>Odeme Tipi:</label>
+                <select name="odeme_tipi" required>
+                    <option value="Nakit">Nakit</option>
+                    <option value="Kredi">Kredi</option>
+                    <option value="Havale">Havale</option>
+                    <option value="Taksit">Taksit</option>
+                </select>
+                <label>Notlar:</label>
+                <textarea name="notlar" rows="3" placeholder="Ek mesajiniz..."></textarea>
+                <button type="submit">Talep Gonder</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SATIM TALEBI MODAL -->
+    <div id="satimModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('satimModal')">&times;</span>
+            <h2>Aracini Sat</h2>
+            <form method="POST">
+                <input type="hidden" name="satim_talep" value="1">
+                <label>Hangi Bayiye:</label>
+                <select name="bayi_id" required>
+                    <option value="">Bayi Sec...</option>
+                    {% for b in bayiler %}
+                    <option value="{{ b.bayi_id }}">{{ b.bayi_adi }} - {{ b.sehir }}</option>
+                    {% endfor %}
+                </select>
+                <label>Marka:</label>
+                <input type="text" name="marka" required>
+                <label>Model:</label>
+                <input type="text" name="model" required>
+                <label>Yil:</label>
+                <input type="number" name="yil" required>
+                <label>Kilometre:</label>
+                <input type="number" name="kilometre" required>
+                <label>Fiyat Beklentisi (TL):</label>
+                <input type="number" name="fiyat_beklentisi" required>
+                <label>Ekspertiz:</label>
+                <select name="ekspertiz" required>
+                    <option value="Yok">Yok</option>
+                    <option value="Var">Var</option>
+                    <option value="Hasarli">Hasarli</option>
+                </select>
+                <button type="submit">Talep Gonder</button>
+            </form>
+        </div>
+    </div>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -21,152 +125,104 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    
+
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('araclar')">🚗 Araçlar</button>
-        <button class="tab-btn" onclick="showTab('al')">🛒 Araç Al</button>
-        <button class="tab-btn" onclick="showTab('sat')">💰 Araç Sat</button>
-        <button class="tab-btn" onclick="showTab('talepler')">📋 Taleplerim</button>
+        <button class="tab-btn active" onclick="showTab('araclar', this)">Satilik Araclar</button>
+        <button class="tab-btn" onclick="showTab('alim', this)">Alim Taleplerim</button>
+        <button class="tab-btn" onclick="showTab('satim', this)">Satim Taleplerim</button>
+        <button class="tab-btn" onclick="openModal('satimModal')" style="background:#10b981;color:white;">+ Aracimi Sat</button>
     </div>
-    
-    <!-- ARAÇLAR -->
+
+    <!-- ARACLAR -->
     <div id="araclar" class="tab-content">
-        <h2>Satışta Olan Araçlar</h2>
-        <table>
-            <tr>
-                <th>ID</th><th>Marka/Model</th><th>Yıl</th><th>KM</th><th>Yakıt</th><th>Vites</th><th>Fiyat</th><th>Bayi</th>
-            </tr>
+        <h2>Satilik Araclar</h2>
+        <div>
             {% for a in araclar %}
-            <tr>
-                <td>{{ a.arac_id }}</td>
-                <td>{{ a.marka }} {{ a.model }}</td>
-                <td>{{ a.yil }}</td>
-                <td>{{ a.kilometre }}</td>
-                <td>{{ a.yakit }}</td>
-                <td>{{ a.vites }}</td>
-                <td><b>{{ a.fiyat }} ₺</b></td>
-                <td>{{ a.bayi_adi }} ({{ a.sehir }})</td>
-            </tr>
+            <div class="arac-card">
+                <h3>{{ a.marka }} {{ a.model }}</h3>
+                <p><b>Yil:</b> {{ a.yil }}</p>
+                <p><b>KM:</b> {{ a.kilometre }}</p>
+                <p><b>Yakit:</b> {{ a.yakit }}</p>
+                <p><b>Vites:</b> {{ a.vites }}</p>
+                <p><b>Bayi:</b> {{ a.bayi_adi }} ({{ a.sehir }})</p>
+                <div class="fiyat">{{ a.fiyat }} TL</div>
+                <button onclick="openAlim({{ a.arac_id }}, '{{ a.marka }} {{ a.model }} ({{ a.yil }})')">Satin Al</button>
+            </div>
+            {% else %}
+            <p>Su an satilik arac bulunmuyor.</p>
             {% endfor %}
-        </table>
+        </div>
     </div>
-    
-    <!-- ARAÇ AL -->
-    <div id="al" class="tab-content" style="display:none">
-        <h2>Araç Alım Talebi Oluştur</h2>
-        <form method="POST" class="form">
-            <input type="hidden" name="alim_talep" value="1">
-            <label>Almak İstediğiniz Aracı Seçin:</label>
-            <select name="arac_id" required>
-                <option value="">Araç Seçiniz</option>
-                {% for a in araclar %}
-                <option value="{{ a.arac_id }}">{{ a.marka }} {{ a.model }} ({{ a.yil }}) - {{ a.fiyat }} ₺</option>
-                {% endfor %}
-            </select>
-            
-            <label>Ödeme Tipi:</label>
-            <select name="odeme_tipi" required>
-                <option value="">Seçiniz</option>
-                <option>Peşin</option>
-                <option>Kredi</option>
-                <option>Takas</option>
-            </select>
-            
-            <label>Notlar:</label>
-            <textarea name="notlar" placeholder="İstekleriniz, sorularınız..."></textarea>
-            
-            <button type="submit">Talep Gönder</button>
-        </form>
-    </div>
-    
-    <!-- ARAÇ SAT -->
-    <div id="sat" class="tab-content" style="display:none">
-        <h2>Araç Satım Talebi Oluştur</h2>
-        <form method="POST" class="form">
-            <input type="hidden" name="satim_talep" value="1">
-            <label>Hangi Bayiye Satmak İstiyorsunuz?</label>
-            <select name="bayi_id" required>
-                <option value="">Bayi Seçiniz</option>
-                {% for b in bayiler %}
-                <option value="{{ b.bayi_id }}">{{ b.bayi_adi }} - {{ b.sehir }}</option>
-                {% endfor %}
-            </select>
-            
-            <div class="row">
-                <input type="text" name="marka" placeholder="Marka" required>
-                <input type="text" name="model" placeholder="Model" required>
-            </div>
-            
-            <div class="row">
-                <input type="number" name="yil" placeholder="Yıl" required>
-                <input type="number" name="kilometre" placeholder="Kilometre" required>
-            </div>
-            
-            <div class="row">
-                <input type="number" step="0.01" name="fiyat_beklentisi" placeholder="Fiyat Beklentiniz (₺)" required>
-                <select name="ekspertiz" required>
-                    <option value="">Ekspertiz Var mı?</option>
-                    <option>Var</option>
-                    <option>Yok</option>
-                </select>
-            </div>
-            
-            <button type="submit">Satım Talebi Gönder</button>
-        </form>
-    </div>
-    
-    <!-- TALEPLERİM -->
-    <div id="talepler" class="tab-content" style="display:none">
-        <h2>Alım Taleplerim</h2>
-        <table>
-            <tr>
-                <th>ID</th><th>Araç</th><th>Fiyat</th><th>Ödeme</th><th>Durum</th><th>Bayi</th><th>Tarih</th>
-            </tr>
+
+    <!-- ALIM TALEPLERIM -->
+    <div id="alim" class="tab-content" style="display:none">
+        <h2>Alim Taleplerim</h2>
+        <table border="1">
+            <tr><th>Arac</th><th>Fiyat</th><th>Odeme</th><th>Bayi</th><th>Durum</th><th>Tarih</th></tr>
             {% for t in alim_talepleri %}
             <tr>
-                <td>{{ t.talep_id }}</td>
-                <td>{{ t.marka }} {{ t.model }} ({{ t.yil }})</td>
-                <td>{{ t.fiyat }} ₺</td>
+                <td>{{ t.marka }} {{ t.model }}</td>
+                <td>{{ t.fiyat }} TL</td>
                 <td>{{ t.odeme_tipi }}</td>
-                <td>{{ t.durum }}</td>
                 <td>{{ t.bayi_adi }}</td>
-                <td>{{ t.talep_tarihi.strftime('%d.%m.%Y') }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-        
-        <h2>Satım Taleplerim</h2>
-        <table>
-            <tr>
-                <th>ID</th><th>Araç</th><th>KM</th><th>Fiyat Beklentisi</th><th>Ekspertiz</th><th>Durum</th><th>Bayi</th><th>Tarih</th>
-            </tr>
-            {% for t in satim_talepleri %}
-            <tr>
-                <td>{{ t.talep_id }}</td>
-                <td>{{ t.marka }} {{ t.model }} ({{ t.yil }})</td>
-                <td>{{ t.kilometre }}</td>
-                <td>{{ t.fiyat_beklentisi }} ₺</td>
-                <td>{{ t.ekspertiz }}</td>
-                <td>{{ t.durum }}</td>
-                <td>{{ t.bayi_adi }}</td>
-                <td>{{ t.talep_tarihi.strftime('%d.%m.%Y') }}</td>
+                <td>
+                    {% if t.durum == 'Beklemede' %}<span class="label label-bekleme">Beklemede</span>
+                    {% elif t.durum == 'Onaylandi' %}<span class="label label-onayli">Onaylandi</span>
+                    {% else %}<span class="label label-red">{{ t.durum }}</span>{% endif %}
+                </td>
+                <td>{{ t.talep_tarihi }}</td>
             </tr>
             {% endfor %}
         </table>
     </div>
-    
+
+    <!-- SATIM TALEPLERIM -->
+    <div id="satim" class="tab-content" style="display:none">
+        <h2>Satim Taleplerim</h2>
+        <table border="1">
+            <tr><th>Arac</th><th>Yil</th><th>KM</th><th>Fiyat Bek.</th><th>Bayi</th><th>Durum</th></tr>
+            {% for t in satim_talepleri %}
+            <tr>
+                <td>{{ t.marka }} {{ t.model }}</td>
+                <td>{{ t.yil }}</td>
+                <td>{{ t.kilometre }}</td>
+                <td>{{ t.fiyat_beklentisi }} TL</td>
+                <td>{{ t.bayi_adi }}</td>
+                <td>
+                    {% if t.durum == 'Beklemede' %}<span class="label label-bekleme">Beklemede</span>
+                    {% elif t.durum == 'Satin Alindi' %}<span class="label label-onayli">Satin Alindi</span>
+                    {% else %}<span class="label label-red">{{ t.durum }}</span>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
     <script>
-        function showTab(tab) {
+        function showTab(tab, btn) {
             var tabs = document.getElementsByClassName('tab-content');
-            for (var i = 0; i < tabs.length; i++) {
-                tabs[i].style.display = 'none';
-            }
+            for (var i=0; i<tabs.length; i++) tabs[i].style.display='none';
             var btns = document.getElementsByClassName('tab-btn');
-            for (var i = 0; i < btns.length; i++) {
-                btns[i].classList.remove('active');
-            }
-            document.getElementById(tab).style.display = 'block';
-            event.target.classList.add('active');
+            for (var i=0; i<btns.length; i++) btns[i].classList.remove('active');
+            document.getElementById(tab).style.display='block';
+            btn.classList.add('active');
+        }
+        function openModal(id) { document.getElementById(id).style.display='block'; }
+        function closeModal(id) { document.getElementById(id).style.display='none'; }
+        function openProfilModal() {
+            document.getElementById('profil_ad_soyad').value='{{ session.ad }} {{ session.soyad }}';
+            document.getElementById('profil_email').value='{{ session.email or "" }}';
+            document.getElementById('profil_telefon').value='{{ session.telefon or "" }}';
+            openModal('profilModal');
+        }
+        function openAlim(id, info) {
+            document.getElementById('alim_arac_id').value=id;
+            document.getElementById('alim_arac_bilgi').textContent=info;
+            openModal('alimModal');
+        }
+        window.onclick=function(e) {
+            var modals=document.getElementsByClassName('modal');
+            for(var i=0;i<modals.length;i++) if(e.target==modals[i]) modals[i].style.display='none';
         }
     </script>
 </body>

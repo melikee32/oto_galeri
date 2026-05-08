@@ -2,14 +2,14 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Giriş - Oto Galeri</title>
+    <title>Giris Yap</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="login-page">
     <div class="login-box">
-        <h1>🚗 OTO GALERİ</h1>
-        <h2>Giriş Yap</h2>
-        
+        <h1>OTO GALERI</h1>
+        <h2>Giris Yap</h2>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -17,23 +17,17 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        
+
         <form method="POST">
             <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="sifre" placeholder="Şifre" required>
-            <button type="submit">Giriş Yap</button>
+            <input type="password" name="sifre" placeholder="Sifre" required>
+            <button type="submit">Giris Yap</button>
         </form>
-        
+
         <div class="signup-link">
-            <p>Hesabınız yok mu? <a href="{{ url_for('kayit') }}">Yeni Üye Ol</a></p>
+            <p>Hesabin yok mu? <a href="{{ url_for('kayit') }}">Kayit Ol</a></p>
         </div>
-        
-        <div class="demo">
-            <p><b>Demo Hesaplar:</b></p>
-            <p>Admin: ayse@gmail.com / 123</p>
-            <p>Personel: mehmet@gmail.com / 123</p>
-            <p>Müşteri: ahmet@gmail.com / 123</p>
-        </div>
+
     </div>
 </body>
 </html>

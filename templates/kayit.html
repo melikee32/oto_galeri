@@ -2,33 +2,99 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Kayıt Ol - Oto Galeri</title>
+    <title>Kayit Ol</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .kayit-container {
+            max-width: 450px;
+            margin: 60px auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .kayit-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+        .kayit-header h1 { font-size: 28px; margin-bottom: 8px; }
+        .kayit-form { padding: 30px; }
+        .kayit-form input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            background: #f8f9fa;
+            box-sizing: border-box;
+        }
+        .kayit-form input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+        .kayit-form button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .login-link {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            background: #f8f9fa;
+        }
+        .login-link a { color: #667eea; text-decoration: none; font-weight: 600; }
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 12px;
+            margin-bottom: 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #1e40af;
+        }
+    </style>
 </head>
-<body class="login-page">
-    <div class="login-box">
-        <h1>🚗 OTO GALERİ</h1>
-        <h2>Yeni Üye Ol</h2>
-        
+<body>
+    <div class="kayit-container">
+        <div class="kayit-header">
+            <h1>OTO GALERI</h1>
+            <p>Musteri Kaydi</p>
+        </div>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                    <div class="alert alert-{{ category }}" style="margin: 20px;">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        
-        <form method="POST">
+
+        <form class="kayit-form" method="POST">
+            <div class="info-box">
+                <b>Bilgi:</b> Sadece musteri olarak kayit olabilirsiniz. Bayi olmak icin sistem yoneticisi ile iletisime gecin.
+            </div>
             <input type="text" name="ad" placeholder="Ad" required>
             <input type="text" name="soyad" placeholder="Soyad" required>
             <input type="email" name="email" placeholder="Email" required>
-            <input type="tel" name="telefon" placeholder="Telefon" required>
-            <input type="password" name="sifre" placeholder="Şifre" required minlength="3">
-            <button type="submit">Kayıt Ol</button>
+            <input type="text" name="telefon" placeholder="Telefon" required>
+            <input type="password" name="sifre" placeholder="Sifre" required>
+            <button type="submit">Kayit Ol</button>
         </form>
-        
-        <div class="signup-link">
-            <p>Zaten üye misiniz? <a href="{{ url_for('login') }}">Giriş Yap</a></p>
+
+        <div class="login-link">
+            <p>Zaten hesabin var mi? <a href="{{ url_for('login') }}">Giris Yap</a></p>
         </div>
     </div>
 </body>
