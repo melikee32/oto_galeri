@@ -52,6 +52,7 @@ def login():
             session['email'] = kullanici['email']
             session['telefon'] = kullanici['telefon']
             session['yetki'] = kullanici['yetki']
+            session['kayit_tarihi'] = str(kullanici['kayit_tarihi'])
             flash('Giris basarili!', 'success')
 
             if kullanici['yetki'] == 'admin':
@@ -154,7 +155,7 @@ def admin():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    # BAYI EKLE (bayi + yetkili kullanici + personel kaydi)
+    # BAYI EKLE
     if request.method == 'POST' and 'bayi_ekle' in request.form:
         try:
             cursor.execute("""INSERT INTO bayiler (bayi_adi, sehir, adres, telefon, email)
@@ -193,19 +194,15 @@ def admin():
     # BAYI SIL
     if request.method == 'POST' and 'bayi_sil' in request.form:
         bayi_id = request.form['bayi_id']
-        # Once bu bayinin araclarina bagli talepleri sil
         cursor.execute("""DELETE FROM arac_alim_talebi 
                         WHERE arac_id IN (SELECT arac_id FROM araclar WHERE bayi_id=%s)""", (bayi_id,))
         cursor.execute("DELETE FROM arac_satim_talebi WHERE bayi_id=%s", (bayi_id,))
-        # Araclari sil
         cursor.execute("DELETE FROM araclar WHERE bayi_id=%s", (bayi_id,))
-        # Personelleri ve kullanicilarini bul/sil
         cursor.execute("SELECT kullanici_id FROM personeller WHERE bayi_id=%s", (bayi_id,))
         personeller = cursor.fetchall()
         cursor.execute("DELETE FROM personeller WHERE bayi_id=%s", (bayi_id,))
         for p in personeller:
             cursor.execute("DELETE FROM kullanicilar WHERE kullanici_id=%s", (p['kullanici_id'],))
-        # Bayiyi sil
         cursor.execute("DELETE FROM bayiler WHERE bayi_id=%s", (bayi_id,))
         db.commit()
         flash('Bayi silindi!', 'success')
@@ -317,6 +314,26 @@ def bayi():
         db.commit()
         flash('Arac eklendi!', 'success')
 
+    # PERSONEL EKLE
+    if request.method == 'POST' and 'personel_ekle' in request.form:
+        try:
+            cursor.execute("""INSERT INTO kullanicilar 
+                            (ad, soyad, email, telefon, sifre, yetki, kayit_tarihi)
+                            VALUES (%s, %s, %s, %s, %s, 'personel', NOW())""",
+                           (request.form['ad'], request.form['soyad'],
+                            request.form['email'], request.form['telefon'],
+                            request.form['sifre']))
+            db.commit()
+            yeni_kullanici_id = cursor.lastrowid
+
+            cursor.execute("""INSERT INTO personeller (kullanici_id, bayi_id, gorev, ise_giris_tarihi)
+                            VALUES (%s, %s, %s, CURDATE())""",
+                           (yeni_kullanici_id, bayi_id, request.form['gorev']))
+            db.commit()
+            flash('Personel eklendi!', 'success')
+        except Exception as e:
+            flash(f'Hata: {str(e)}', 'error')
+
     # ARAC SIL
     if request.method == 'POST' and 'arac_sil' in request.form:
         arac_id = request.form['arac_id']
@@ -362,6 +379,11 @@ def bayi():
     cursor.execute("SELECT * FROM araclar WHERE bayi_id=%s ORDER BY ilan_tarihi DESC", (bayi_id,))
     araclar = cursor.fetchall()
 
+    cursor.execute("""SELECT k.*, p.personel_id, p.gorev FROM personeller p
+                     JOIN kullanicilar k ON p.kullanici_id = k.kullanici_id
+                     WHERE p.bayi_id=%s ORDER BY k.ad""", (bayi_id,))
+    personeller = cursor.fetchall()
+
     cursor.execute("""SELECT aat.*, a.marka, a.model, a.fiyat,
                      k.ad, k.soyad, k.email, k.telefon
                      FROM arac_alim_talebi aat
@@ -381,6 +403,7 @@ def bayi():
 
     return render_template('bayi.html',
                            bayi=bayi, araclar=araclar,
+                           personeller=personeller,
                            alim_talepleri=alim_talepleri,
                            satim_talepleri=satim_talepleri)
 
