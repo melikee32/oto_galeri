@@ -2,29 +2,27 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Kayit Ol</title>
+    <title>Giris Yap</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="login-page">
 <div class="login-box">
 
     <h1>OTO GALERİ</h1>
-    <h2>Musteri Kaydi</h2>
+    <h2>Giris Yap</h2>
 
     {% for kategori, mesaj in get_flashed_messages(with_categories=true) %}
         <div class="alert alert-{{ kategori }}">{{ mesaj }}</div>
     {% endfor %}
 
     <form method="POST">
-        <input type="text" name="ad_soyad" placeholder="Ad Soyad" maxlength="50" required>
         <input type="email" name="email" placeholder="Email" maxlength="100" required>
-        <input type="text" name="telefon" placeholder="Telefon" maxlength="11" required>
         <input type="password" name="sifre" placeholder="Sifre" maxlength="20" required>
-        <button type="submit">Kayit Ol</button>
+        <button type="submit">Giris Yap</button>
     </form>
 
     <div class="signup-link">
-        <a href="{{ url_for('giris') }}">Zaten hesabin var mi? Giris Yap</a>
+        <a href="{{ url_for('kayit') }}">Hesabin yok mu? Kayit Ol</a>
     </div>
 
 </div>

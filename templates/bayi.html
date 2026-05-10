@@ -4,166 +4,64 @@
     <meta charset="UTF-8">
     <title>Bayi Panel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); }
-        .modal-content { background:#fff; margin:3% auto; padding:30px; border-radius:12px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto; }
-        .close { color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer; }
-        .close:hover { color:#000; }
-        .modal-content input, .modal-content select, .modal-content textarea {
-            width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;
-        }
-        .modal-content button { width:100%; padding:12px; background:#667eea; color:white; border:none; border-radius:6px; cursor:pointer; margin-top:10px; font-weight:600; }
-        .header span { cursor:pointer; }
-        .btn-onay { background:#10b981; color:white; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; margin:2px; }
-        .btn-red { background:#ef4444; color:white; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; margin:2px; }
-        .btn-sil { background:#ef4444; color:white; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; }
-        .label { display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
-        .label-bekleme { background:#fef3c7; color:#92400e; }
-        .label-onayli { background:#d1fae5; color:#065f46; }
-        .label-red { background:#fee2e2; color:#991b1b; }
-    </style>
 </head>
 <body>
-    <div class="header">
-        <h1>BAYI PANEL - {{ bayi.bayi_adi }}</h1>
-        <div>
-            <span onclick="openProfilModal()" title="Hesap bilgilerimi goster" style="background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:20px; margin-right:10px;">
-                👤 {{ session.ad }} {{ session.soyad }}
-            </span>
-            <a href="{{ url_for('logout') }}">Cikis</a>
-        </div>
+
+<div class="header">
+    <h1>BAYİ PANELİ - {{ bayi.bayi_adi }}</h1>
+    <div>
+        <span>{{ session.ad_soyad }}</span>
+        <a href="{{ url_for('cikis') }}">Cikis Yap</a>
+    </div>
+</div>
+
+<div>
+    {% for k, m in get_flashed_messages(with_categories=true) %}
+        <div class="alert alert-{{ k }}">{{ m }}</div>
+    {% endfor %}
+
+    <!-- SEKMELER -->
+    <div>
+        <button class="sekme-btn aktif" onclick="goster('araclar', this)">Araclarim</button>
+        <button class="sekme-btn" onclick="goster('personeller', this)">Personeller</button>
+        <button class="sekme-btn" onclick="goster('alim', this)">Alim Talepleri</button>
+        <button class="sekme-btn" onclick="goster('satim', this)">Satim Talepleri</button>
     </div>
 
-    <!-- PROFIL MODAL -->
-    <div id="profilModal" class="modal">
-        <div class="modal-content" style="max-width:550px;">
-            <span class="close" onclick="closeModal('profilModal')">&times;</span>
-            <h2 style="color:#667eea; margin-bottom:5px;">Hesap Bilgilerim</h2>
-            <p style="color:#6b7280; font-size:13px; margin-bottom:20px;">Email, telefon ve sifrenizi guncelleyebilirsiniz.</p>
+    <!-- ===== ARAÇLAR ===== -->
+    <div id="araclar" class="sekme">
 
-            <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:20px;">
-                <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                    <span style="color:#6b7280;">Ad Soyad:</span>
-                    <b>{{ session.ad }} {{ session.soyad }}</b>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                    <span style="color:#6b7280;">Bayi:</span>
-                    <b style="color:#667eea;">{{ bayi.bayi_adi }}</b>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                    <span style="color:#6b7280;">Yetki:</span>
-                    <b style="color:#667eea;">{{ session.yetki|upper }}</b>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                    <span style="color:#6b7280;">Kayit Tarihi:</span>
-                    <b>{{ session.kayit_tarihi or '-' }}</b>
-                </div>
-            </div>
-
-            <form method="POST" action="{{ url_for('profil_guncelle') }}">
-                <label style="font-weight:600; color:#374151;">Email:</label>
-                <input type="email" name="profil_email" id="profil_email" required>
-
-                <label style="font-weight:600; color:#374151;">Telefon:</label>
-                <input type="text" name="profil_telefon" id="profil_telefon" required>
-
-                <label style="font-weight:600; color:#374151;">Yeni Sifre (bos birakirsa degismez):</label>
-                <input type="password" name="profil_yeni_sifre" placeholder="Yeni sifre">
-
-                <label style="font-weight:600; color:#374151;">Sifreyi Onayla:</label>
-                <input type="password" name="profil_yeni_sifre_confirm" placeholder="Yeni sifreyi tekrar yazin">
-
-                <button type="submit" style="background:#10b981;">Bilgilerimi Guncelle</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- ARAC EKLE MODAL -->
-    <div id="aracEkleModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('aracEkleModal')">&times;</span>
-            <h2>Yeni Arac Ekle</h2>
+        <div class="kart">
+            <h3>Yeni Arac Ekle</h3>
             <form method="POST">
                 <input type="hidden" name="arac_ekle" value="1">
-                <label>Marka:</label>
-                <input type="text" name="marka" required>
-                <label>Model:</label>
-                <input type="text" name="model" required>
-                <label>Yil:</label>
-                <input type="number" name="yil" required min="1990" max="2026">
-                <label>Kilometre:</label>
-                <input type="number" name="kilometre" required>
-                <label>Yakit:</label>
-                <select name="yakit" required>
-                    <option value="Benzin">Benzin</option>
-                    <option value="Dizel">Dizel</option>
-                    <option value="LPG">LPG</option>
-                    <option value="Hibrit">Hibrit</option>
-                    <option value="Elektrik">Elektrik</option>
-                </select>
-                <label>Vites:</label>
-                <select name="vites" required>
-                    <option value="Manuel">Manuel</option>
-                    <option value="Otomatik">Otomatik</option>
-                </select>
-                <label>Renk:</label>
-                <input type="text" name="renk" required>
-                <label>Fiyat (TL):</label>
-                <input type="number" name="fiyat" required>
-                <label>Plaka:</label>
-                <input type="text" name="plaka" required>
-                <label>Aciklama:</label>
-                <textarea name="aciklama" rows="3"></textarea>
-                <button type="submit">Araci Ekle</button>
+                <div class="satir">
+                    <input type="text" name="marka" placeholder="Marka" maxlength="30" required>
+                    <input type="text" name="model" placeholder="Model" maxlength="30" required>
+                    <input type="number" name="yil" placeholder="Yil" min="1990" max="2026" required>
+                    <input type="number" name="kilometre" placeholder="Kilometre" required>
+                </div>
+                <div class="satir">
+                    <select name="yakit" required>
+                        <option value="Benzin">Benzin</option>
+                        <option value="Dizel">Dizel</option>
+                        <option value="LPG">LPG</option>
+                        <option value="Hibrit">Hibrit</option>
+                        <option value="Elektrik">Elektrik</option>
+                    </select>
+                    <select name="vites" required>
+                        <option value="Manuel">Manuel</option>
+                        <option value="Otomatik">Otomatik</option>
+                    </select>
+                    <input type="text" name="renk" placeholder="Renk" maxlength="15" required>
+                    <input type="number" name="fiyat" placeholder="Fiyat (TL)" required>
+                    <input type="text" name="plaka" placeholder="Plaka" maxlength="10" required>
+                </div>
+                <button class="btn-yesil" type="submit">Araci Ekle</button>
             </form>
         </div>
-    </div>
 
-    <!-- PERSONEL EKLE MODAL -->
-    <div id="personelEkleModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('personelEkleModal')">&times;</span>
-            <h2>Yeni Personel Ekle</h2>
-            <form method="POST">
-                <input type="hidden" name="personel_ekle" value="1">
-                <label>Ad:</label>
-                <input type="text" name="ad" required>
-                <label>Soyad:</label>
-                <input type="text" name="soyad" required>
-                <label>Email (giris icin):</label>
-                <input type="email" name="email" required>
-                <label>Telefon:</label>
-                <input type="text" name="telefon" required>
-                <label>Sifre:</label>
-                <input type="password" name="sifre" required>
-                <label>Gorev:</label>
-                <input type="text" name="gorev" placeholder="Satis Danismani vb." required>
-                <button type="submit">Personeli Ekle</button>
-            </form>
-        </div>
-    </div>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('araclar', this)">Araclarim</button>
-        <button class="tab-btn" onclick="showTab('personeller', this)">Personeller</button>
-        <button class="tab-btn" onclick="showTab('alim', this)">Alim Talepleri</button>
-        <button class="tab-btn" onclick="showTab('satim', this)">Satim Talepleri</button>
-        <button class="tab-btn" onclick="openModal('aracEkleModal')" style="background:#10b981;color:white;">+ Arac</button>
-        <button class="tab-btn" onclick="openModal('personelEkleModal')" style="background:#2563eb;color:white;">+ Personel</button>
-    </div>
-
-    <!-- ARACLAR -->
-    <div id="araclar" class="tab-content">
-        <h2>Araclarim</h2>
-        <table border="1">
+        <table>
             <tr><th>ID</th><th>Marka/Model</th><th>Yil</th><th>KM</th><th>Fiyat</th><th>Plaka</th><th>Durum</th><th>Islem</th></tr>
             {% for a in araclar %}
             <tr>
@@ -175,10 +73,10 @@
                 <td>{{ a.plaka }}</td>
                 <td>{{ a.arac_durumu }}</td>
                 <td>
-                    <form method="POST" style="display:inline;" onsubmit="return confirm('Silinsin mi?');">
+                    <form method="POST" onsubmit="return confirm('Silinsin mi?');">
                         <input type="hidden" name="arac_sil" value="1">
                         <input type="hidden" name="arac_id" value="{{ a.arac_id }}">
-                        <button class="btn-sil" type="submit">Sil</button>
+                        <button class="btn-kirmizi" type="submit">Sil</button>
                     </form>
                 </td>
             </tr>
@@ -186,15 +84,32 @@
         </table>
     </div>
 
-    <!-- PERSONELLER -->
-    <div id="personeller" class="tab-content" style="display:none">
-        <h2>Personeller</h2>
-        <table border="1">
+    <!-- ===== PERSONELLER ===== -->
+    <div id="personeller" class="sekme gizli">
+
+        <div class="kart">
+            <h3>Yeni Personel Ekle</h3>
+            <form method="POST" autocomplete="off">
+                <input type="hidden" name="personel_ekle" value="1">
+                <div class="satir">
+                    <input type="text" name="p_ad_soyad" placeholder="Ad Soyad" maxlength="50" required autocomplete="off">
+                    <input type="email" name="p_email" placeholder="Email (giris icin)" maxlength="100" required autocomplete="new-email">
+                </div>
+                <div class="satir">
+                    <input type="text" name="p_telefon" placeholder="Telefon" maxlength="11" required autocomplete="off">
+                    <input type="password" name="p_sifre" placeholder="Sifre" maxlength="20" required autocomplete="new-password">
+                    <input type="text" name="p_gorev" placeholder="Gorev (Satis Danismani vb.)" maxlength="30" required autocomplete="off">
+                </div>
+                <button class="btn-mavi" type="submit">Personel Ekle</button>
+            </form>
+        </div>
+
+        <table>
             <tr><th>ID</th><th>Ad Soyad</th><th>Email</th><th>Telefon</th><th>Gorev</th></tr>
             {% for p in personeller %}
             <tr>
                 <td>{{ p.personel_id }}</td>
-                <td>{{ p.ad }} {{ p.soyad }}</td>
+                <td>{{ p.ad_soyad }}</td>
                 <td>{{ p.email }}</td>
                 <td>{{ p.telefon }}</td>
                 <td>{{ p.gorev }}</td>
@@ -203,57 +118,55 @@
         </table>
     </div>
 
-    <!-- ALIM TALEPLERI -->
-    <div id="alim" class="tab-content" style="display:none">
-        <h2>Musterilerden Gelen Alim Talepleri</h2>
-        <table border="1">
-            <tr><th>ID</th><th>Musteri</th><th>Telefon</th><th>Arac</th><th>Fiyat</th><th>Odeme</th><th>Notlar</th><th>Durum</th><th>Islem</th></tr>
+    <!-- ===== ALİM TALEPLERİ ===== -->
+    <div id="alim" class="sekme gizli">
+        <h2>Alim Talepleri</h2>
+        <table>
+            <tr><th>ID</th><th>Musteri</th><th>Tel</th><th>Arac</th><th>Fiyat</th><th>Odeme</th><th>Durum</th><th>Guncelle</th></tr>
             {% for t in alim_talepleri %}
             <tr>
-                <td>{{ t.alim_talep_id }}</td>
-                <td>{{ t.ad }} {{ t.soyad }}</td>
+                <td>{{ t.alim_id }}</td>
+                <td>{{ t.ad_soyad }}</td>
                 <td>{{ t.telefon }}</td>
                 <td>{{ t.marka }} {{ t.model }}</td>
                 <td>{{ t.fiyat }} TL</td>
                 <td>{{ t.odeme_tipi }}</td>
-                <td>{{ t.notlar or '-' }}</td>
                 <td>
-                    {% if t.durum == 'Beklemede' %}<span class="label label-bekleme">Beklemede</span>
-                    {% elif t.durum == 'Onaylandi' %}<span class="label label-onayli">Onaylandi</span>
-                    {% else %}<span class="label label-red">{{ t.durum }}</span>{% endif %}
+                    {% if t.durum == 'Beklemede' %}<span class="durum-bekleme">Beklemede</span>
+                    {% elif t.durum == 'Gorusuluyor' %}<span class="durum-gorusuluyor">Gorusuluyor</span>
+                    {% elif t.durum == 'Onaylandi' %}<span class="durum-onayli">Onaylandi</span>
+                    {% else %}<span class="durum-red">{{ t.durum }}</span>{% endif %}
                 </td>
                 <td>
-                    {% if t.durum == 'Beklemede' %}
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="alim_durum" value="1">
-                        <input type="hidden" name="alim_talep_id" value="{{ t.alim_talep_id }}">
+                    {% if t.durum != 'Onaylandi' and t.durum != 'Reddedildi' %}
+                    <form method="POST">
+                        <input type="hidden" name="alim_guncelle" value="1">
+                        <input type="hidden" name="alim_id" value="{{ t.alim_id }}">
                         <input type="hidden" name="arac_id" value="{{ t.arac_id }}">
-                        <input type="hidden" name="durum" value="Onaylandi">
-                        <button class="btn-onay" type="submit">Onayla</button>
+                        <select name="durum">
+                            <option value="Beklemede">Beklemede</option>
+                            <option value="Gorusuluyor">Gorusuluyor</option>
+                            <option value="Onaylandi">Onaylandi</option>
+                            <option value="Reddedildi">Reddedildi</option>
+                        </select>
+                        <button class="btn-mavi" type="submit">Guncelle</button>
                     </form>
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="alim_durum" value="1">
-                        <input type="hidden" name="alim_talep_id" value="{{ t.alim_talep_id }}">
-                        <input type="hidden" name="arac_id" value="{{ t.arac_id }}">
-                        <input type="hidden" name="durum" value="Reddedildi">
-                        <button class="btn-red" type="submit">Reddet</button>
-                    </form>
-                    {% else %}-{% endif %}
+                    {% else %} - {% endif %}
                 </td>
             </tr>
             {% endfor %}
         </table>
     </div>
 
-    <!-- SATIM TALEPLERI -->
-    <div id="satim" class="tab-content" style="display:none">
-        <h2>Musterilerden Gelen Satim Talepleri</h2>
-        <table border="1">
-            <tr><th>ID</th><th>Musteri</th><th>Telefon</th><th>Arac</th><th>Yil</th><th>KM</th><th>Fiyat Bek.</th><th>Ekspertiz</th><th>Durum</th><th>Islem</th></tr>
+    <!-- ===== SATIM TALEPLERİ ===== -->
+    <div id="satim" class="sekme gizli">
+        <h2>Satim Talepleri</h2>
+        <table>
+            <tr><th>ID</th><th>Musteri</th><th>Tel</th><th>Arac</th><th>Yil</th><th>KM</th><th>Fiyat Bek.</th><th>Ekspertiz</th><th>Durum</th><th>Guncelle</th></tr>
             {% for t in satim_talepleri %}
             <tr>
-                <td>{{ t.satim_talep_id }}</td>
-                <td>{{ t.ad }} {{ t.soyad }}</td>
+                <td>{{ t.satim_id }}</td>
+                <td>{{ t.ad_soyad }}</td>
                 <td>{{ t.telefon }}</td>
                 <td>{{ t.marka }} {{ t.model }}</td>
                 <td>{{ t.yil }}</td>
@@ -261,51 +174,47 @@
                 <td>{{ t.fiyat_beklentisi }} TL</td>
                 <td>{{ t.ekspertiz }}</td>
                 <td>
-                    {% if t.durum == 'Beklemede' %}<span class="label label-bekleme">Beklemede</span>
-                    {% elif t.durum == 'Satin Alindi' %}<span class="label label-onayli">Satin Alindi</span>
-                    {% else %}<span class="label label-red">{{ t.durum }}</span>{% endif %}
+                    {% if t.durum == 'Beklemede' %}<span class="durum-bekleme">Beklemede</span>
+                    {% elif t.durum == 'Gorusuluyor' %}<span class="durum-gorusuluyor">Gorusuluyor</span>
+                    {% elif t.durum == 'Satin Alindi' %}<span class="durum-onayli">Satin Alindi</span>
+                    {% else %}<span class="durum-red">{{ t.durum }}</span>{% endif %}
                 </td>
                 <td>
-                    {% if t.durum == 'Beklemede' %}
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="satim_durum" value="1">
-                        <input type="hidden" name="satim_talep_id" value="{{ t.satim_talep_id }}">
-                        <input type="hidden" name="durum" value="Satin Alindi">
-                        <button class="btn-onay" type="submit">Satin Al</button>
+                    {% if t.durum != 'Satin Alindi' and t.durum != 'Reddedildi' %}
+                    <form method="POST">
+                        <input type="hidden" name="satim_guncelle" value="1">
+                        <input type="hidden" name="satim_id" value="{{ t.satim_id }}">
+                        <select name="durum">
+                            <option value="Beklemede">Beklemede</option>
+                            <option value="Gorusuluyor">Gorusuluyor</option>
+                            <option value="Satin Alindi">Satin Alindi</option>
+                            <option value="Reddedildi">Reddedildi</option>
+                        </select>
+                        <button class="btn-mavi" type="submit">Guncelle</button>
                     </form>
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="satim_durum" value="1">
-                        <input type="hidden" name="satim_talep_id" value="{{ t.satim_talep_id }}">
-                        <input type="hidden" name="durum" value="Reddedildi">
-                        <button class="btn-red" type="submit">Reddet</button>
-                    </form>
-                    {% else %}-{% endif %}
+                    {% else %} - {% endif %}
                 </td>
             </tr>
             {% endfor %}
         </table>
     </div>
 
-    <script>
-        function showTab(tab, btn) {
-            var tabs = document.getElementsByClassName('tab-content');
-            for (var i=0; i<tabs.length; i++) tabs[i].style.display='none';
-            var btns = document.getElementsByClassName('tab-btn');
-            for (var i=0; i<btns.length; i++) btns[i].classList.remove('active');
-            document.getElementById(tab).style.display='block';
-            btn.classList.add('active');
+</div>
+
+<script>
+    function goster(id, btn) {
+        var sekmeler = document.getElementsByClassName('sekme');
+        for (var i = 0; i < sekmeler.length; i++) {
+            sekmeler[i].classList.add('gizli');
         }
-        function openModal(id) { document.getElementById(id).style.display='block'; }
-        function closeModal(id) { document.getElementById(id).style.display='none'; }
-        function openProfilModal() {
-            document.getElementById('profil_email').value='{{ session.email or "" }}';
-            document.getElementById('profil_telefon').value='{{ session.telefon or "" }}';
-            openModal('profilModal');
+        var butonlar = document.getElementsByClassName('sekme-btn');
+        for (var i = 0; i < butonlar.length; i++) {
+            butonlar[i].classList.remove('aktif');
         }
-        window.onclick=function(e) {
-            var modals=document.getElementsByClassName('modal');
-            for(var i=0;i<modals.length;i++) if(e.target==modals[i]) modals[i].style.display='none';
-        }
-    </script>
+        document.getElementById(id).classList.remove('gizli');
+        btn.classList.add('aktif');
+    }
+</script>
+
 </body>
 </html>

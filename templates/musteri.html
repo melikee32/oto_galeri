@@ -4,181 +4,71 @@
     <meta charset="UTF-8">
     <title>Musteri Panel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); }
-        .modal-content { background:#fff; margin:5% auto; padding:30px; border-radius:12px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto; }
-        .close { color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer; }
-        .close:hover { color:#000; }
-        .modal-content input, .modal-content select, .modal-content textarea {
-            width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;
-        }
-        .modal-content button { width:100%; padding:12px; background:#667eea; color:white; border:none; border-radius:6px; cursor:pointer; margin-top:10px; }
-        .header span { cursor:pointer; }
-        .arac-card {
-            display:inline-block; width:calc(33% - 20px); margin:10px;
-            background:white; border-radius:12px; padding:20px;
-            box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:all 0.3s;
-            vertical-align:top;
-        }
-        .arac-card:hover { transform:translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.15); }
-        .arac-card h3 { color:#667eea; margin-bottom:10px; }
-        .arac-card .fiyat { font-size:20px; font-weight:bold; color:#10b981; margin:10px 0; }
-        .arac-card button { background:#667eea; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; width:100%; margin-top:10px; }
-        .label { display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
-        .label-bekleme { background:#fef3c7; color:#92400e; }
-        .label-onayli { background:#d1fae5; color:#065f46; }
-        .label-red { background:#fee2e2; color:#991b1b; }
-    </style>
 </head>
 <body>
-    <div class="header">
-        <h1>MUSTERI PANEL</h1>
-        <div>
-            <span onclick="openProfilModal()" title="Hesap bilgilerimi goster" style="background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:20px; margin-right:10px;">
-                👤 {{ session.ad }} {{ session.soyad }}
-            </span>
-            <a href="{{ url_for('logout') }}">Cikis</a>
-        </div>
+
+<div class="header">
+    <h1>MUŞTERİ PANELİ</h1>
+    <div>
+        <span>{{ session.ad_soyad }}</span>
+        <a href="{{ url_for('cikis') }}">Cikis Yap</a>
+    </div>
+</div>
+
+<div>
+    {% for k, m in get_flashed_messages(with_categories=true) %}
+        <div class="alert alert-{{ k }}">{{ m }}</div>
+    {% endfor %}
+
+    <!-- SEKMELER -->
+    <div>
+        <button class="sekme-btn aktif" onclick="goster('araclar', this)">Satilik Araclar</button>
+        <button class="sekme-btn" onclick="goster('alim_taleplerim', this)">Alim Taleplerim</button>
+        <button class="sekme-btn" onclick="goster('satim_taleplerim', this)">Satim Taleplerim</button>
+        <button class="sekme-btn" onclick="goster('arac_sat', this)">Aracimi Sat</button>
     </div>
 
-    <!-- PROFIL MODAL -->
-    <div id="profilModal" class="modal">
-        <div class="modal-content" style="max-width:550px;">
-            <span class="close" onclick="closeModal('profilModal')">&times;</span>
-            <h2 style="color:#667eea; margin-bottom:5px;">Hesap Bilgilerim</h2>
-            <p style="color:#6b7280; font-size:13px; margin-bottom:20px;">Email, telefon ve sifrenizi guncelleyebilirsiniz.</p>
-
-            <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:20px;">
-                <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                    <span style="color:#6b7280;">Ad Soyad:</span>
-                    <b>{{ session.ad }} {{ session.soyad }}</b>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                    <span style="color:#6b7280;">Yetki:</span>
-                    <b style="color:#667eea;">{{ session.yetki|upper }}</b>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                    <span style="color:#6b7280;">Kayit Tarihi:</span>
-                    <b>{{ session.kayit_tarihi or '-' }}</b>
-                </div>
-            </div>
-
-            <form method="POST" action="{{ url_for('profil_guncelle') }}">
-                <label style="font-weight:600; color:#374151;">Email:</label>
-                <input type="email" name="profil_email" id="profil_email" required>
-
-                <label style="font-weight:600; color:#374151;">Telefon:</label>
-                <input type="text" name="profil_telefon" id="profil_telefon" required>
-
-                <label style="font-weight:600; color:#374151;">Yeni Sifre (bos birakirsa degismez):</label>
-                <input type="password" name="profil_yeni_sifre" placeholder="Yeni sifre">
-
-                <label style="font-weight:600; color:#374151;">Sifreyi Onayla:</label>
-                <input type="password" name="profil_yeni_sifre_confirm" placeholder="Yeni sifreyi tekrar yazin">
-
-                <button type="submit" style="background:#10b981;">Bilgilerimi Guncelle</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- ALIM TALEBI MODAL -->
-    <div id="alimModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('alimModal')">&times;</span>
-            <h2>Arac Alim Talebi</h2>
-            <form method="POST">
-                <input type="hidden" name="alim_talep" value="1">
-                <input type="hidden" name="arac_id" id="alim_arac_id">
-                <label id="alim_arac_bilgi" style="font-weight:bold; color:#667eea;"></label>
-                <label>Odeme Tipi:</label>
-                <select name="odeme_tipi" required>
-                    <option value="Nakit">Nakit</option>
-                    <option value="Kredi">Kredi</option>
-                    <option value="Havale">Havale</option>
-                    <option value="Taksit">Taksit</option>
-                </select>
-                <label>Notlar:</label>
-                <textarea name="notlar" rows="3" placeholder="Ek mesajiniz..."></textarea>
-                <button type="submit">Talep Gonder</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- SATIM TALEBI MODAL -->
-    <div id="satimModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('satimModal')">&times;</span>
-            <h2>Aracini Sat</h2>
-            <form method="POST">
-                <input type="hidden" name="satim_talep" value="1">
-                <label>Hangi Bayiye:</label>
-                <select name="bayi_id" required>
-                    <option value="">Bayi Sec...</option>
-                    {% for b in bayiler %}
-                    <option value="{{ b.bayi_id }}">{{ b.bayi_adi }} - {{ b.sehir }}</option>
-                    {% endfor %}
-                </select>
-                <label>Marka:</label>
-                <input type="text" name="marka" required>
-                <label>Model:</label>
-                <input type="text" name="model" required>
-                <label>Yil:</label>
-                <input type="number" name="yil" required>
-                <label>Kilometre:</label>
-                <input type="number" name="kilometre" required>
-                <label>Fiyat Beklentisi (TL):</label>
-                <input type="number" name="fiyat_beklentisi" required>
-                <label>Ekspertiz:</label>
-                <select name="ekspertiz" required>
-                    <option value="Yok">Yok</option>
-                    <option value="Var">Var</option>
-                    <option value="Hasarli">Hasarli</option>
-                </select>
-                <button type="submit">Talep Gonder</button>
-            </form>
-        </div>
-    </div>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('araclar', this)">Satilik Araclar</button>
-        <button class="tab-btn" onclick="showTab('alim', this)">Alim Taleplerim</button>
-        <button class="tab-btn" onclick="showTab('satim', this)">Satim Taleplerim</button>
-        <button class="tab-btn" onclick="openModal('satimModal')" style="background:#10b981;color:white;">+ Aracimi Sat</button>
-    </div>
-
-    <!-- ARACLAR -->
-    <div id="araclar" class="tab-content">
+    <!-- ===== SALİLİK ARAÇLAR ===== -->
+    <div id="araclar" class="sekme">
         <h2>Satilik Araclar</h2>
-        <div>
+
+        {% if araclar %}
             {% for a in araclar %}
-            <div class="arac-card">
+            <div class="arac-kart">
                 <h3>{{ a.marka }} {{ a.model }}</h3>
-                <p><b>Yil:</b> {{ a.yil }}</p>
-                <p><b>KM:</b> {{ a.kilometre }}</p>
-                <p><b>Yakit:</b> {{ a.yakit }}</p>
-                <p><b>Vites:</b> {{ a.vites }}</p>
-                <p><b>Bayi:</b> {{ a.bayi_adi }} ({{ a.sehir }})</p>
+                <p><b>Yil:</b> {{ a.yil }} | <b>KM:</b> {{ a.kilometre }}</p>
+                <p><b>Yakit:</b> {{ a.yakit }} | <b>Vites:</b> {{ a.vites }}</p>
+                <p><b>Renk:</b> {{ a.renk }}</p>
+                <p><b>Bayi:</b> {{ a.bayi_adi }} - {{ a.sehir }}</p>
                 <div class="fiyat">{{ a.fiyat }} TL</div>
-                <button onclick="openAlim({{ a.arac_id }}, '{{ a.marka }} {{ a.model }} ({{ a.yil }})')">Satin Al</button>
+
+                <button class="btn-mavi" onclick="formAc('f{{ a.arac_id }}')">Satin Al</button>
+
+                <div id="f{{ a.arac_id }}" class="alim-form">
+                    <form method="POST">
+                        <input type="hidden" name="alim_talep" value="1">
+                        <input type="hidden" name="arac_id" value="{{ a.arac_id }}">
+                        <label>Odeme Tipi:</label>
+                        <select name="odeme_tipi" required>
+                            <option value="Nakit">Nakit</option>
+                            <option value="Kredi">Kredi</option>
+                            <option value="Havale">Havale</option>
+                            <option value="Taksit">Taksit</option>
+                        </select>
+                        <button class="btn-yesil" type="submit">Talep Gonder</button>
+                    </form>
+                </div>
             </div>
-            {% else %}
-            <p>Su an satilik arac bulunmuyor.</p>
             {% endfor %}
-        </div>
+        {% else %}
+            <p>Su an satilik arac bulunmuyor.</p>
+        {% endif %}
     </div>
 
-    <!-- ALIM TALEPLERIM -->
-    <div id="alim" class="tab-content" style="display:none">
+    <!-- ===== ALİM TALEPLERİM ===== -->
+    <div id="alim_taleplerim" class="sekme gizli">
         <h2>Alim Taleplerim</h2>
-        <table border="1">
+        <table>
             <tr><th>Arac</th><th>Fiyat</th><th>Odeme</th><th>Bayi</th><th>Durum</th><th>Tarih</th></tr>
             {% for t in alim_talepleri %}
             <tr>
@@ -187,9 +77,10 @@
                 <td>{{ t.odeme_tipi }}</td>
                 <td>{{ t.bayi_adi }}</td>
                 <td>
-                    {% if t.durum == 'Beklemede' %}<span class="label label-bekleme">Beklemede</span>
-                    {% elif t.durum == 'Onaylandi' %}<span class="label label-onayli">Onaylandi</span>
-                    {% else %}<span class="label label-red">{{ t.durum }}</span>{% endif %}
+                    {% if t.durum == 'Beklemede' %}<span class="durum-bekleme">Beklemede</span>
+                    {% elif t.durum == 'Gorusuluyor' %}<span class="durum-gorusuluyor">Gorusuluyor</span>
+                    {% elif t.durum == 'Onaylandi' %}<span class="durum-onayli">Onaylandi</span>
+                    {% else %}<span class="durum-red">{{ t.durum }}</span>{% endif %}
                 </td>
                 <td>{{ t.talep_tarihi }}</td>
             </tr>
@@ -197,10 +88,10 @@
         </table>
     </div>
 
-    <!-- SATIM TALEPLERIM -->
-    <div id="satim" class="tab-content" style="display:none">
+    <!-- ===== SATIM TALEPLERİM ===== -->
+    <div id="satim_taleplerim" class="sekme gizli">
         <h2>Satim Taleplerim</h2>
-        <table border="1">
+        <table>
             <tr><th>Arac</th><th>Yil</th><th>KM</th><th>Fiyat Bek.</th><th>Bayi</th><th>Durum</th></tr>
             {% for t in satim_talepleri %}
             <tr>
@@ -210,40 +101,74 @@
                 <td>{{ t.fiyat_beklentisi }} TL</td>
                 <td>{{ t.bayi_adi }}</td>
                 <td>
-                    {% if t.durum == 'Beklemede' %}<span class="label label-bekleme">Beklemede</span>
-                    {% elif t.durum == 'Satin Alindi' %}<span class="label label-onayli">Satin Alindi</span>
-                    {% else %}<span class="label label-red">{{ t.durum }}</span>{% endif %}
+                    {% if t.durum == 'Beklemede' %}<span class="durum-bekleme">Beklemede</span>
+                    {% elif t.durum == 'Gorusuluyor' %}<span class="durum-gorusuluyor">Gorusuluyor</span>
+                    {% elif t.durum == 'Satin Alindi' %}<span class="durum-onayli">Satin Alindi</span>
+                    {% else %}<span class="durum-red">{{ t.durum }}</span>{% endif %}
                 </td>
             </tr>
             {% endfor %}
         </table>
     </div>
 
-    <script>
-        function showTab(tab, btn) {
-            var tabs = document.getElementsByClassName('tab-content');
-            for (var i=0; i<tabs.length; i++) tabs[i].style.display='none';
-            var btns = document.getElementsByClassName('tab-btn');
-            for (var i=0; i<btns.length; i++) btns[i].classList.remove('active');
-            document.getElementById(tab).style.display='block';
-            btn.classList.add('active');
+    <!-- ===== ARACIMI SAT ===== -->
+    <div id="arac_sat" class="sekme gizli">
+        <div class="kart">
+            <h3>Aracimi Satmak Istiyorum</h3>
+            <form method="POST">
+                <input type="hidden" name="satim_talep" value="1">
+                <div class="satir">
+                    <select name="bayi_id" required>
+                        <option value="">Bayi Secin...</option>
+                        {% for b in bayiler %}
+                        <option value="{{ b.bayi_id }}">{{ b.bayi_adi }} - {{ b.sehir }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="satir">
+                    <input type="text" name="marka" placeholder="Marka" maxlength="30" required>
+                    <input type="text" name="model" placeholder="Model" maxlength="30" required>
+                    <input type="number" name="yil" placeholder="Yil" min="1990" max="2026" required>
+                </div>
+                <div class="satir">
+                    <input type="number" name="kilometre" placeholder="Kilometre" required>
+                    <input type="number" name="fiyat" placeholder="Fiyat Beklentisi (TL)" required>
+                    <select name="ekspertiz" required>
+                        <option value="Yok">Ekspertiz Yok</option>
+                        <option value="Var">Ekspertiz Var</option>
+                        <option value="Hasarli">Hasarli</option>
+                    </select>
+                </div>
+                <button class="btn-yesil" type="submit">Talep Gonder</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function goster(id, btn) {
+        var sekmeler = document.getElementsByClassName('sekme');
+        for (var i = 0; i < sekmeler.length; i++) {
+            sekmeler[i].classList.add('gizli');
         }
-        function openModal(id) { document.getElementById(id).style.display='block'; }
-        function closeModal(id) { document.getElementById(id).style.display='none'; }
-        function openProfilModal() {
-            document.getElementById('profil_email').value='{{ session.email or "" }}';
-            document.getElementById('profil_telefon').value='{{ session.telefon or "" }}';
-            openModal('profilModal');
+        var butonlar = document.getElementsByClassName('sekme-btn');
+        for (var i = 0; i < butonlar.length; i++) {
+            butonlar[i].classList.remove('aktif');
         }
-        function openAlim(id, info) {
-            document.getElementById('alim_arac_id').value=id;
-            document.getElementById('alim_arac_bilgi').textContent=info;
-            openModal('alimModal');
+        document.getElementById(id).classList.remove('gizli');
+        btn.classList.add('aktif');
+    }
+
+    function formAc(id) {
+        var f = document.getElementById(id);
+        if (f.style.display === 'block') {
+            f.style.display = 'none';
+        } else {
+            f.style.display = 'block';
         }
-        window.onclick=function(e) {
-            var modals=document.getElementsByClassName('modal');
-            for(var i=0;i<modals.length;i++) if(e.target==modals[i]) modals[i].style.display='none';
-        }
-    </script>
+    }
+</script>
+
 </body>
 </html>
