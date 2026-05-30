@@ -8,19 +8,92 @@
 <body>
 
 <div class="header">
-    <h1>MUŞTERİ PANELİ</h1>
-    <div>
-        <span>{{ session.ad_soyad }}</span>
+    <h1>MÜŞTERİ PANELİ</h1>
+    <div style="position:relative; display:flex; align-items:center; gap:12px;">
+        <button onclick="favorilerPopupAc()" style="cursor:pointer; background:rgba(255,255,255,0.18); padding:6px 14px; border-radius:20px; font-weight:600; border:none; color:white; font-size:14px; transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+            ❤️ Favorilerim <span id="favori-sayac" style="background:rgba(255,255,255,0.3); padding:1px 7px; border-radius:10px; font-size:12px;">{{ favori_ids|length }}</span>
+        </button>
+        <span onclick="profilPopupAc()" title="Profili guncelle" style="cursor:pointer; background:rgba(255,255,255,0.18); padding:6px 14px; border-radius:20px; font-weight:600; user-select:none; transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">{{ session.ad_soyad }} ▾</span>
         <a href="{{ url_for('cikis') }}">Cikis Yap</a>
     </div>
 </div>
 
-<div>
+<!-- DEKONT YÜKLEME POPUP -->
+<div id="dekont-overlay" onclick="dekontYukleKapat()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:999;"></div>
+<div id="dekont-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+     background:#fff; border-radius:12px; padding:28px; width:400px; max-width:95vw; z-index:1000; box-shadow:0 8px 32px rgba(0,0,0,.2);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h3 style="margin:0; font-size:18px;">📤 Dekont / Belge Yükle</h3>
+        <button onclick="dekontYukleKapat()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#999;">✕</button>
+    </div>
+    <p style="font-size:13px; color:#666; margin-bottom:16px;">Ödeme dekontunuzu veya ilgili belgeyi yükleyin. (PDF, JPG, PNG)</p>
+    <form method="POST" action="{{ url_for('belge_yukle') }}" enctype="multipart/form-data">
+        <input type="hidden" name="talep_tipi" id="dekont-talep-tipi">
+        <input type="hidden" name="talep_id" id="dekont-talep-id">
+        <input type="hidden" name="belge_tipi" value="dekont">
+        <input type="hidden" name="redirect_url" value="{{ request.full_path }}">
+        <input type="file" name="belge" accept=".pdf,image/png,image/jpeg,image/webp" required 
+               style="width:100%; padding:10px; border:2px dashed #d1d5db; border-radius:8px; margin-bottom:16px; cursor:pointer;">
+        <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn-yesil" style="flex:1;">Yükle</button>
+            <button type="button" onclick="dekontYukleKapat()" class="btn-kirmizi" style="flex:1;">İptal</button>
+        </div>
+    </form>
+</div>
+
+<!-- FAVORİLER POPUP -->
+<div id="favoriler-overlay" onclick="favorilerPopupKapat()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:999;"></div>
+<div id="favoriler-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+     background:#fff; border-radius:12px; padding:28px; width:520px; max-width:95vw; max-height:80vh; overflow-y:auto; z-index:1000; box-shadow:0 8px 32px rgba(0,0,0,.2);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h3 style="margin:0; font-size:18px;">❤️ Favorilerim</h3>
+        <button onclick="favorilerPopupKapat()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#999;">✕</button>
+    </div>
+    <div id="favori-liste-icerik">
+        <p style="text-align:center; color:#999; padding:20px;">Yükleniyor...</p>
+    </div>
+</div>
+
+<!-- PROFİL POPUP -->
+<div id="profil-overlay" onclick="profilPopupKapat()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:999;"></div>
+<div id="profil-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+     background:#fff; border-radius:12px; padding:32px 28px; width:360px; z-index:1000; box-shadow:0 8px 32px rgba(0,0,0,.2);">
+    <h3 style="margin:0 0 20px; font-size:18px;">Profili Guncelle</h3>
+
     {% for k, m in get_flashed_messages(with_categories=true) %}
-        <div class="alert alert-{{ k }}">{{ m }}</div>
+        <div class="alert alert-{{ k }}" style="margin-bottom:10px;">{{ m }}</div>
     {% endfor %}
 
-    <!-- SEKMELER -->
+    <form method="POST" action="{{ url_for('profil') }}">
+        <input type="hidden" name="popup_redirect" value="{{ request.path }}">
+        <input type="text"     name="ad_soyad"    value="{{ session.ad_soyad }}" placeholder="Ad Soyad"  maxlength="50"  required style="margin-bottom:10px;">
+        <input type="email"    name="email"        value="{{ session.email }}"    placeholder="Email"     maxlength="100" required style="margin-bottom:10px;">
+        <input type="text"     name="telefon"      value="{{ session.telefon }}"  placeholder="Telefon"   maxlength="11"  required style="margin-bottom:10px;">
+        <hr style="margin:14px 0; border-color:#eee;">
+        <p style="font-size:12px; color:#999; margin:0 0 8px;">Yeni sifre (degistirmeyeceksen bos birak)</p>
+        <input type="password" name="sifre"        placeholder="Yeni Sifre"      maxlength="20"  style="margin-bottom:10px;">
+        <p style="font-size:12px; color:#555; margin:0 0 6px;"><b>Mevcut sifre (zorunlu)</b></p>
+        <input type="password" name="mevcut_sifre" placeholder="Mevcut Sifre"    maxlength="20"  required style="margin-bottom:16px;">
+        <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn-yesil" style="flex:1;">Kaydet</button>
+            <button type="button" onclick="profilPopupKapat()" class="btn-kirmizi" style="flex:1;">Iptal</button>
+        </div>
+    </form>
+</div>
+
+<div>
+    <!-- PRO TOAST NOTIFICATIONS -->
+    <div class="toast-container">
+        {% for k, m in get_flashed_messages(with_categories=true) %}
+            <div class="toast toast-{{ k }}">
+                <span class="toast-icon">
+                    {% if k == 'success' %}✅{% elif k == 'error' %}❌{% else %}ℹ️{% endif %}
+                </span>
+                <span>{{ m }}</span>
+            </div>
+        {% endfor %}
+    </div>
+
     <div>
         <button class="sekme-btn aktif" onclick="goster('araclar', this)">Satilik Araclar</button>
         <button class="sekme-btn" onclick="goster('alim_taleplerim', this)">Alim Taleplerim</button>
@@ -28,21 +101,143 @@
         <button class="sekme-btn" onclick="goster('arac_sat', this)">Aracimi Sat</button>
     </div>
 
-    <!-- ===== SALİLİK ARAÇLAR ===== -->
+    <!-- ===== SATILIK ARAÇLAR ===== -->
     <div id="araclar" class="sekme">
-        <h2>Satilik Araclar</h2>
+        
+        <!-- PAKET D: FİLTRELEME FORMU -->
+        <div class="filtre-kutu">
+            <form method="GET" id="filtre-form" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; width:100%;">
+                
+                <!-- Arama -->
+                <div style="flex:1; min-width:200px;">
+                    <label style="margin:0; font-size:12px;">🔍 Marka / Model / Açıklama</label>
+                    <input type="text" name="arama" placeholder="Ara..." value="{{ arama or '' }}" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; margin-top:4px;">
+                </div>
 
+                <!-- Fiyat Aralığı -->
+                <div style="flex:0 0 200px;">
+                    <label style="margin:0; font-size:12px;">💰 Fiyat (TL)</label>
+                    <div style="display:flex; gap:5px; margin-top:4px;">
+                        <input type="number" name="min_fiyat" placeholder="Min" value="{{ min_fiyat or '' }}" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                        <input type="number" name="max_fiyat" placeholder="Max" value="{{ max_fiyat or '' }}" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                    </div>
+                </div>
+
+                <!-- Yıl Aralığı -->
+                <div style="flex:0 0 200px;">
+                    <label style="margin:0; font-size:12px;">📅 Yıl</label>
+                    <div style="display:flex; gap:5px; margin-top:4px;">
+                        <input type="number" name="min_yil" placeholder="Min" value="{{ min_yil or '' }}" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                        <input type="number" name="max_yil" placeholder="Max" value="{{ max_yil or '' }}" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                    </div>
+                </div>
+
+                <!-- KM Aralığı -->
+                <div style="flex:0 0 200px;">
+                    <label style="margin:0; font-size:12px;">📍 KM</label>
+                    <div style="display:flex; gap:5px; margin-top:4px;">
+                        <input type="number" name="min_km" placeholder="Min" value="{{ min_km or '' }}" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                        <input type="number" name="max_km" placeholder="Max" value="{{ max_km or '' }}" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                    </div>
+                </div>
+
+                <!-- Yakıt Türü -->
+                <div style="flex:0 0 150px;">
+                    <label style="margin:0; font-size:12px;">⛽ Yakıt</label>
+                    <select name="yakit" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; margin-top:4px;">
+                        <option value="">Tümü</option>
+                        <option value="Benzin" {% if yakit == 'Benzin' %}selected{% endif %}>Benzin</option>
+                        <option value="Dizel" {% if yakit == 'Dizel' %}selected{% endif %}>Dizel</option>
+                        <option value="Elektrik" {% if yakit == 'Elektrik' %}selected{% endif %}>Elektrik</option>
+                        <option value="Hibrit" {% if yakit == 'Hibrit' %}selected{% endif %}>Hibrit</option>
+                    </select>
+                </div>
+
+                <!-- Sıralama -->
+                <div style="flex:0 0 150px;">
+                    <label style="margin:0; font-size:12px;">↕️ Sırala</label>
+                    <select name="sira" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; margin-top:4px;">
+                        <option value="ilan_tarihi_desc" {% if sira == 'ilan_tarihi_desc' %}selected{% endif %}>En Yeni</option>
+                        <option value="fiyat_asc" {% if sira == 'fiyat_asc' %}selected{% endif %}>En Ucuz</option>
+                        <option value="fiyat_desc" {% if sira == 'fiyat_desc' %}selected{% endif %}>En Pahalı</option>
+                        <option value="km_asc" {% if sira == 'km_asc' %}selected{% endif %}>En Düşük KM</option>
+                        <option value="km_desc" {% if sira == 'km_desc' %}selected{% endif %}>En Yüksek KM</option>
+                        <option value="yil_desc" {% if sira == 'yil_desc' %}selected{% endif %}>En Yeni Model</option>
+                    </select>
+                </div>
+
+                <!-- Butonlar -->
+                <div style="flex:0 0 auto; display:flex; gap:10px;">
+                    <button type="submit" class="btn-mavi" style="padding:8px 18px;">Filtrele</button>
+                    <a href="{{ url_for('musteri_panel') }}" class="btn-kirmizi" style="padding:8px 18px; display:inline-block; text-decoration:none;">Temizle</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Araç Kartları -->
+        <div class="tablo-baslik" style="margin:16px 0 8px;">
+            <h2 style="margin:0;">Satilik Araclar ({{ araclar|length }} araç)</h2>
+        </div>
+
+        <div id="arac-kartlar">
         {% if araclar %}
             {% for a in araclar %}
-            <div class="arac-kart">
+            <div class="arac-kart" data-arama="{{ a.marka }} {{ a.model }} {{ a.yakit }} {{ a.vites }} {{ a.renk }} {{ a.bayi_adi }} {{ a.sehir }} {{ a.aciklama }}">
+                {% if a.foto_url %}
+                <img class="arac-foto" src="{{ url_for('static', filename='uploads/' ~ a.foto_url) }}"
+                     onerror="this.style.display='none'">
+                {% endif %}
+
+                <!-- PAKET A: İlan Tarihi ve Görüntülenme -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:11px; color:#999;">
+                    <span>📅 {{ a.ilan_tarihi.strftime('%d.%m.%Y') if a.ilan_tarihi else 'Bilinmiyor' }}</span>
+                    <span>👁 {{ a.goruntulenme }} görüntülendi</span>
+                </div>
+
                 <h3>{{ a.marka }} {{ a.model }}</h3>
                 <p><b>Yil:</b> {{ a.yil }} | <b>KM:</b> {{ a.kilometre }}</p>
                 <p><b>Yakit:</b> {{ a.yakit }} | <b>Vites:</b> {{ a.vites }}</p>
                 <p><b>Renk:</b> {{ a.renk }}</p>
+
+                <!-- PAKET A: Hasar Durumu Badge -->
+                {% if a.hasar_durumu %}
+                <div style="margin-bottom:8px;">
+                    {% if a.hasar_durumu == 'Hasarsız' %}
+                        <span style="background:#d1fae5; color:#065f46; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600;">✅ {{ a.hasar_durumu }}</span>
+                    {% elif a.hasar_durumu == 'Hasarlı' %}
+                        <span style="background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600;">⚠️ {{ a.hasar_durumu }}</span>
+                    {% elif a.hasar_durumu == 'Değişen Var' %}
+                        <span style="background:#fef3c7; color:#92400e; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600;">🔧 {{ a.hasar_durumu }}</span>
+                    {% else %}
+                        <span style="background:#e5e7eb; color:#374151; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600;">❓ {{ a.hasar_durumu }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- PAKET A: Açıklama -->
+                {% if a.aciklama %}
+                <p style="background:#f9fafb; padding:10px; border-radius:6px; border-left:3px solid #667eea; font-size:13px; color:#555; margin:10px 0;">
+                    <b>Açıklama:</b> {{ a.aciklama[:150] }}{% if a.aciklama|length > 150 %}...{% endif %}
+                </p>
+                {% endif %}
+
                 <p><b>Bayi:</b> {{ a.bayi_adi }} - {{ a.sehir }}</p>
                 <div class="fiyat">{{ a.fiyat }} TL</div>
 
-                <button class="btn-mavi" onclick="formAc('f{{ a.arac_id }}')">Satin Al</button>
+                <!-- PAKET C: Favori Butonu -->
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <button class="btn-mavi" onclick="formAc('f{{ a.arac_id }}')" style="flex:1; min-width:0;">Satin Al</button>
+                    <button id="favbtn-{{ a.arac_id }}"
+                            onclick="favoriToggle({{ a.arac_id }}, this)" 
+                            style="flex:1; min-width:0; padding:7px 10px; border-radius:5px; cursor:pointer; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:all .2s;
+                                   {% if a.arac_id in favori_ids %}
+                                   background:#fee2e2; color:#ef4444; border:2px solid #ef4444;
+                                   {% else %}
+                                   background:white; color:#6b7280; border:2px solid #d1d5db;
+                                   {% endif %}">
+                        {% if a.arac_id in favori_ids %}❤️ Favorimde{% else %}🤍 Favori{% endif %}
+                    </button>
+                </div>
 
                 <div id="f{{ a.arac_id }}" class="alim-form">
                     <form method="POST">
@@ -55,25 +250,44 @@
                             <option value="Havale">Havale</option>
                             <option value="Taksit">Taksit</option>
                         </select>
+                        <label style="margin-top:10px;">Pazarlık Yapacak Misiniz? (TL)</label>
+                        <input type="number" name="pazarlık_tutari" placeholder="0 (İndirim tutarını yazın)" min="0" value="0" style="width:100%;">
                         <button class="btn-yesil" type="submit">Talep Gonder</button>
                     </form>
                 </div>
             </div>
             {% endfor %}
         {% else %}
-            <p>Su an satilik arac bulunmuyor.</p>
+            <p style="padding:20px; text-align:center; color:#999;">Seçtiğiniz kriterlere uygun araç bulunmuyor.</p>
         {% endif %}
+        </div>
     </div>
 
     <!-- ===== ALİM TALEPLERİM ===== -->
     <div id="alim_taleplerim" class="sekme gizli">
-        <h2>Alim Taleplerim</h2>
-        <table>
-            <tr><th>Arac</th><th>Fiyat</th><th>Odeme</th><th>Bayi</th><th>Durum</th><th>Tarih</th></tr>
+        <div class="tablo-baslik" style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px;">
+            <h2 style="margin:0;">Alim Taleplerim</h2>
+            <input class="arama-kutu" type="text" placeholder="🔍 Araç Adına Göre Ara..." onkeyup="tabloAra(this, 'alim-tablo')" style="width:220px;">
+        </div>
+        <table id="alim-tablo">
+            <tr><th>Foto</th><th>Arac</th><th>Fiyat</th><th>Pazarlık</th><th>Odeme</th><th>Bayi</th><th>Durum</th><th>Tarih</th><th>Belgeler</th></tr>
             {% for t in alim_talepleri %}
             <tr>
+                <td>
+                    {% if t.foto_url %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ t.foto_url) }}"
+                         style="width:60px;height:45px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'">
+                    {% else %}<span style="color:#ccc;font-size:20px;">🚗</span>{% endif %}
+                </td>
                 <td>{{ t.marka }} {{ t.model }}</td>
                 <td>{{ t.fiyat }} TL</td>
+                <td>
+                    {% if t.pazarlık_tutari and t.pazarlık_tutari > 0 %}
+                        <span style="background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:5px; font-size:11px; font-weight:600;">-{{ t.pazarlık_tutari }} TL</span>
+                    {% else %}
+                        <span style="color:#999; font-size:11px;">-</span>
+                    {% endif %}
+                </td>
                 <td>{{ t.odeme_tipi }}</td>
                 <td>{{ t.bayi_adi }}</td>
                 <td>
@@ -83,6 +297,20 @@
                     {% else %}<span class="durum-red">{{ t.durum }}</span>{% endif %}
                 </td>
                 <td>{{ t.talep_tarihi }}</td>
+                <td style="white-space:nowrap;">
+                    <!-- Dekont (müşteri yükler) -->
+                    {% if t.dekont %}
+                        <a href="{{ url_for('static', filename='uploads/' ~ t.dekont) }}" target="_blank" style="display:inline-block; font-size:11px; color:#10b981; margin-bottom:3px;">✅ Dekontum</a><br>
+                    {% else %}
+                        <button onclick="dekontYukleAc('alim', {{ t.alim_id }})" style="font-size:11px; padding:3px 8px; background:#667eea; color:white; border:none; border-radius:4px; cursor:pointer; margin-bottom:3px;">📤 Dekont Yükle</button><br>
+                    {% endif %}
+                    <!-- Fatura (bayi yükler, müşteri indirir) -->
+                    {% if t.fatura %}
+                        <a href="{{ url_for('static', filename='uploads/' ~ t.fatura) }}" target="_blank" style="display:inline-block; font-size:11px; color:#2563eb;">📄 Fatura İndir</a>
+                    {% else %}
+                        <span style="font-size:11px; color:#bbb;">Fatura bekleniyor</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </table>
@@ -90,11 +318,20 @@
 
     <!-- ===== SATIM TALEPLERİM ===== -->
     <div id="satim_taleplerim" class="sekme gizli">
-        <h2>Satim Taleplerim</h2>
-        <table>
-            <tr><th>Arac</th><th>Yil</th><th>KM</th><th>Fiyat Bek.</th><th>Bayi</th><th>Durum</th></tr>
+        <div class="tablo-baslik" style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px;">
+            <h2 style="margin:0;">Satim Taleplerim</h2>
+            <input class="arama-kutu" type="text" placeholder="🔍 Araç Adına Göre Ara..." onkeyup="tabloAra(this, 'satim-tablo')" style="width:220px;">
+        </div>
+        <table id="satim-tablo">
+            <tr><th>Foto</th><th>Arac</th><th>Yil</th><th>KM</th><th>Fiyat Bek.</th><th>Bayi</th><th>Durum</th><th>Belgeler</th></tr>
             {% for t in satim_talepleri %}
             <tr>
+                <td>
+                    {% if t.foto_url %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ t.foto_url) }}"
+                         style="width:60px;height:45px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'">
+                    {% else %}<span style="color:#ccc;font-size:20px;">🚗</span>{% endif %}
+                </td>
                 <td>{{ t.marka }} {{ t.model }}</td>
                 <td>{{ t.yil }}</td>
                 <td>{{ t.kilometre }}</td>
@@ -106,6 +343,20 @@
                     {% elif t.durum == 'Satin Alindi' %}<span class="durum-onayli">Satin Alindi</span>
                     {% else %}<span class="durum-red">{{ t.durum }}</span>{% endif %}
                 </td>
+                <td style="white-space:nowrap;">
+                    <!-- Dekont (müşteri yükler) -->
+                    {% if t.dekont %}
+                        <a href="{{ url_for('static', filename='uploads/' ~ t.dekont) }}" target="_blank" style="display:inline-block; font-size:11px; color:#10b981; margin-bottom:3px;">✅ Belgem</a><br>
+                    {% else %}
+                        <button onclick="dekontYukleAc('satim', {{ t.satim_id }})" style="font-size:11px; padding:3px 8px; background:#667eea; color:white; border:none; border-radius:4px; cursor:pointer; margin-bottom:3px;">📤 Belge Yükle</button><br>
+                    {% endif %}
+                    <!-- Fatura (bayi yükler, müşteri indirir) -->
+                    {% if t.fatura %}
+                        <a href="{{ url_for('static', filename='uploads/' ~ t.fatura) }}" target="_blank" style="display:inline-block; font-size:11px; color:#2563eb;">📄 Fatura İndir</a>
+                    {% else %}
+                        <span style="font-size:11px; color:#bbb;">Fatura bekleniyor</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </table>
@@ -115,7 +366,7 @@
     <div id="arac_sat" class="sekme gizli">
         <div class="kart">
             <h3>Aracimi Satmak Istiyorum</h3>
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="satim_talep" value="1">
                 <div class="satir">
                     <select name="bayi_id" required>
@@ -139,35 +390,171 @@
                         <option value="Hasarli">Hasarli</option>
                     </select>
                 </div>
+                <div class="satir" style="align-items:center;">
+                    <label style="margin:0; white-space:nowrap;">📷 Arac Fotoğrafı:</label>
+                    <input type="file" name="foto" accept="image/png,image/jpeg,image/webp">
+                </div>
                 <button class="btn-yesil" type="submit">Talep Gonder</button>
             </form>
         </div>
     </div>
-
 </div>
 
 <script>
-    function goster(id, btn) {
-        var sekmeler = document.getElementsByClassName('sekme');
-        for (var i = 0; i < sekmeler.length; i++) {
-            sekmeler[i].classList.add('gizli');
-        }
-        var butonlar = document.getElementsByClassName('sekme-btn');
-        for (var i = 0; i < butonlar.length; i++) {
-            butonlar[i].classList.remove('aktif');
-        }
-        document.getElementById(id).classList.remove('gizli');
-        btn.classList.add('aktif');
-    }
+// Sekme göster/gizle
+function goster(id, btn) {
+    document.querySelectorAll('.sekme').forEach(s => s.classList.add('gizli'));
+    document.querySelectorAll('.sekme-btn').forEach(b => b.classList.remove('aktif'));
+    document.getElementById(id).classList.remove('gizli');
+    btn.classList.add('aktif');
+}
 
-    function formAc(id) {
-        var f = document.getElementById(id);
-        if (f.style.display === 'block') {
-            f.style.display = 'none';
-        } else {
-            f.style.display = 'block';
-        }
+// Form aç/kapat
+function formAc(id) {
+    var f = document.getElementById(id);
+    f.style.display = f.style.display === 'block' ? 'none' : 'block';
+}
+
+// Tablo arama
+function tabloAra(input, tabloId) {
+    var filtre = input.value.toLowerCase();
+    var satirlar = document.getElementById(tabloId).getElementsByTagName('tr');
+    for (var i = 1; i < satirlar.length; i++) {
+        satirlar[i].style.display = satirlar[i].textContent.toLowerCase().includes(filtre) ? '' : 'none';
     }
+}
+
+// Profil popup
+function profilPopupAc() {
+    document.getElementById('profil-overlay').style.display = 'block';
+    document.getElementById('profil-popup').style.display = 'block';
+}
+function profilPopupKapat() {
+    document.getElementById('profil-overlay').style.display = 'none';
+    document.getElementById('profil-popup').style.display = 'none';
+}
+
+// PAKET C: FAVORİ TOGGLE (AJAX)
+function favoriToggle(aracId, btn) {
+    fetch('/api/favori-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ arac_id: aracId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            if (data.action === 'added') {
+                btn.innerHTML = '❤️ Favorimde';
+                btn.style.background = '#fee2e2';
+                btn.style.color = '#ef4444';
+                btn.style.borderColor = '#ef4444';
+                // Sayacı artır
+                var sayac = document.getElementById('favori-sayac');
+                sayac.textContent = parseInt(sayac.textContent) + 1;
+            } else {
+                btn.innerHTML = '🤍 Favori';
+                btn.style.background = 'white';
+                btn.style.color = '#6b7280';
+                btn.style.borderColor = '#d1d5db';
+                // Sayacı azalt
+                var sayac = document.getElementById('favori-sayac');
+                sayac.textContent = Math.max(0, parseInt(sayac.textContent) - 1);
+            }
+        } else {
+            alert('Hata: ' + (data.message || 'Bilinmeyen hata'));
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+// DEKONT YÜKLEME POPUP
+function dekontYukleAc(talepTipi, talepId) {
+    document.getElementById('dekont-talep-tipi').value = talepTipi;
+    document.getElementById('dekont-talep-id').value = talepId;
+    document.getElementById('dekont-overlay').style.display = 'block';
+    document.getElementById('dekont-popup').style.display = 'block';
+}
+function dekontYukleKapat() {
+    document.getElementById('dekont-overlay').style.display = 'none';
+    document.getElementById('dekont-popup').style.display = 'none';
+}
+
+// FAVORİLER POPUP
+function favorilerPopupAc() {
+    document.getElementById('favoriler-overlay').style.display = 'block';
+    document.getElementById('favoriler-popup').style.display = 'block';
+    favorilerYukle();
+}
+function favorilerPopupKapat() {
+    document.getElementById('favoriler-overlay').style.display = 'none';
+    document.getElementById('favoriler-popup').style.display = 'none';
+}
+function favorilerYukle() {
+    fetch('/api/favorilerim-detay')
+    .then(r => r.json())
+    .then(data => {
+        var icerik = document.getElementById('favori-liste-icerik');
+        if (!data.success || data.araclar.length === 0) {
+            icerik.innerHTML = '<p style="text-align:center; color:#999; padding:30px;">Henüz favoriye eklediğin araç yok.<br><span style="font-size:24px;">🤍</span></p>';
+            return;
+        }
+        var html = '';
+        data.araclar.forEach(function(a) {
+            html += `
+            <div style="display:flex; gap:14px; padding:14px 0; border-bottom:1px solid #f3f4f6; align-items:flex-start;">
+                <div style="flex:0 0 90px;">
+                    ${a.foto_url 
+                        ? `<img src="/static/uploads/${a.foto_url}" style="width:90px;height:65px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none'">`
+                        : `<div style="width:90px;height:65px;background:#e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;">🚗</div>`
+                    }
+                </div>
+                <div style="flex:1;">
+                    <div style="font-weight:700; font-size:15px; margin-bottom:4px;">${a.marka} ${a.model}</div>
+                    <div style="font-size:12px; color:#6b7280; margin-bottom:4px;">${a.yil} · ${a.kilometre.toLocaleString()} KM · ${a.yakit}</div>
+                    <div style="font-size:16px; font-weight:700; color:#10b981;">${Number(a.fiyat).toLocaleString('tr-TR')} TL</div>
+                    <div style="font-size:11px; color:#999; margin-top:2px;">${a.bayi_adi} - ${a.sehir}</div>
+                </div>
+                <button onclick="favoriPopupKaldir(${a.arac_id}, this)" 
+                        style="flex:0 0 auto; background:none; border:none; color:#ef4444; cursor:pointer; font-size:20px; padding:4px;" title="Favoriden çıkar">✕</button>
+            </div>`;
+        });
+        icerik.innerHTML = html;
+    })
+    .catch(err => {
+        document.getElementById('favori-liste-icerik').innerHTML = '<p style="color:red; text-align:center;">Yüklenirken hata oluştu.</p>';
+    });
+}
+function favoriPopupKaldir(aracId, btn) {
+    fetch('/api/favori-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ arac_id: aracId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Popup satırını kaldır
+            btn.closest('div[style*="border-bottom"]').remove();
+            // Sayfa üzerindeki butonu da güncelle
+            var kartBtn = document.getElementById('favbtn-' + aracId);
+            if (kartBtn) {
+                kartBtn.innerHTML = '🤍 Favori';
+                kartBtn.style.background = 'white';
+                kartBtn.style.color = '#6b7280';
+                kartBtn.style.borderColor = '#d1d5db';
+            }
+            // Sayacı azalt
+            var sayac = document.getElementById('favori-sayac');
+            sayac.textContent = Math.max(0, parseInt(sayac.textContent) - 1);
+            // Liste boş kaldıysa mesaj göster
+            var icerik = document.getElementById('favori-liste-icerik');
+            if (icerik.querySelectorAll('div[style*="border-bottom"]').length === 0) {
+                icerik.innerHTML = '<p style="text-align:center; color:#999; padding:30px;">Favorilerin boşaldı.<br><span style="font-size:24px;">🤍</span></p>';
+            }
+        }
+    });
+}
 </script>
 
 </body>

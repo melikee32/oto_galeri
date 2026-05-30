@@ -7,23 +7,53 @@
 </head>
 <body>
 
-<!-- ÜST BAR -->
+<!-- PRO TOAST NOTIFICATIONS -->
+<div class="toast-container">
+    {% for k, m in get_flashed_messages(with_categories=true) %}
+        <div class="toast toast-{{ k }}">
+            <span class="toast-icon">
+                {% if k == 'success' %}✅{% elif k == 'error' %}❌{% else %}ℹ️{% endif %}
+            </span>
+            <span>{{ m }}</span>
+        </div>
+    {% endfor %}
+</div>
+
 <div class="header">
     <h1>ADMİN PANELİ</h1>
-    <div>
-        <span>{{ session.ad_soyad }}</span>
+    <div style="position:relative; display:flex; align-items:center; gap:12px;">
+        <span onclick="profilPopupAc()" title="Profili guncelle" style="cursor:pointer; background:rgba(255,255,255,0.18); padding:6px 14px; border-radius:20px; font-weight:600; user-select:none; transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">{{ session.ad_soyad }} ▾</span>
         <a href="{{ url_for('cikis') }}">Cikis Yap</a>
     </div>
 </div>
 
-<div>
-    {% for k, m in get_flashed_messages(with_categories=true) %}
-        <div class="alert alert-{{ k }}">{{ m }}</div>
-    {% endfor %}
+<!-- PROFİL POPUP -->
+<div id="profil-overlay" onclick="profilPopupKapat()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:999;"></div>
+<div id="profil-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+     background:#fff; border-radius:12px; padding:32px 28px; width:360px; z-index:1000; box-shadow:0 8px 32px rgba(0,0,0,.2);">
+    <h3 style="margin:0 0 20px; font-size:18px;">Profili Guncelle</h3>
 
-    <!-- SEKMELER -->
+    <form method="POST" action="{{ url_for('profil') }}">
+        <input type="hidden" name="popup_redirect" value="{{ request.path }}">
+        <input type="text"     name="ad_soyad"      value="{{ session.ad_soyad }}" placeholder="Ad Soyad"    maxlength="50"  required style="margin-bottom:10px;">
+        <input type="email"    name="email"          value="{{ session.email }}"    placeholder="Email"       maxlength="100" required style="margin-bottom:10px;">
+        <input type="text"     name="telefon"        value="{{ session.telefon }}"  placeholder="Telefon"     maxlength="11"  required style="margin-bottom:10px;">
+        <hr style="margin:14px 0; border-color:#eee;">
+        <p style="font-size:12px; color:#999; margin:0 0 8px;">Yeni sifre (degistirmeyeceksen bos birak)</p>
+        <input type="password" name="sifre"          placeholder="Yeni Sifre"      maxlength="20"  style="margin-bottom:10px;">
+        <p style="font-size:12px; color:#555; margin:0 0 6px;"><b>Mevcut sifre (zorunlu)</b></p>
+        <input type="password" name="mevcut_sifre"   placeholder="Mevcut Sifre"    maxlength="20"  required style="margin-bottom:16px;">
+        <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn-yesil" style="flex:1;">Kaydet</button>
+            <button type="button" onclick="profilPopupKapat()" class="btn-kirmizi" style="flex:1;">Iptal</button>
+        </div>
+    </form>
+</div>
+
+<div>
     <div>
         <button class="sekme-btn aktif" onclick="goster('bayiler', this)">Bayiler</button>
+        <button class="sekme-btn" onclick="goster('personeller', this)">Personeller</button>
         <button class="sekme-btn" onclick="goster('araclar', this)">Araclar</button>
         <button class="sekme-btn" onclick="goster('kullanicilar', this)">Kullanicilar</button>
         <button class="sekme-btn" onclick="goster('alim', this)">Alim Talepleri</button>
@@ -32,49 +62,146 @@
 
     <!-- ===== BAYİLER ===== -->
     <div id="bayiler" class="sekme">
-
         <div class="kart">
             <h3>Yeni Bayi Ekle</h3>
             <form method="POST" autocomplete="off">
                 <input type="hidden" name="bayi_ekle" value="1">
-                <label>Bayi Bilgileri:</label>
+                <label>Bayi Bilgileri</label>
                 <div class="satir">
-                    <input type="text" name="bayi_adi" placeholder="Bayi Adi" maxlength="50" required autocomplete="off">
-                    <input type="text" name="sehir" placeholder="Sehir" maxlength="30" required autocomplete="off">
-                    <input type="text" name="adres" placeholder="Adres" maxlength="100" autocomplete="off">
+                    <input type="text" name="bayi_adi" placeholder="Bayi Adi" maxlength="50" required>
+                    <input type="text" name="sehir" placeholder="Sehir" maxlength="30" required>
+                    <input type="text" name="adres" placeholder="Adres" maxlength="100">
                 </div>
                 <div class="satir">
-                    <input type="text" name="b_telefon" placeholder="Bayi Telefon" maxlength="11" required autocomplete="off">
-                    <input type="email" name="b_email" placeholder="Bayi Email" maxlength="100" autocomplete="off">
+                    <input type="text" name="b_telefon" placeholder="Bayi Telefon" maxlength="11" required>
+                    <input type="email" name="b_email" placeholder="Bayi Email" maxlength="100">
                 </div>
-                <label>Giris Yapacak Yetkili Hesap:</label>
+                <label>Bayi Yetkilisi</label>
                 <div class="satir">
-                    <input type="text" name="ad_soyad" placeholder="Ad Soyad" maxlength="50" required autocomplete="off">
-                    <input type="email" name="k_email" placeholder="Email" maxlength="100" required autocomplete="new-email">
+                    <input type="text" name="ad_soyad" placeholder="Ad Soyad" maxlength="50" required>
+                    <input type="email" name="k_email" placeholder="Email" maxlength="100" required>
                 </div>
                 <div class="satir">
-                    <input type="text" name="k_telefon" placeholder="Telefon" maxlength="11" required autocomplete="off">
-                    <input type="password" name="k_sifre" placeholder="Sifre" maxlength="20" required autocomplete="new-password">
+                    <input type="text" name="k_telefon" placeholder="Telefon" maxlength="11" required>
+                    <input type="password" name="k_sifre" placeholder="Sifre" maxlength="20" required>
                 </div>
                 <button class="btn-mavi" type="submit">Bayi Ekle</button>
             </form>
         </div>
 
-        <table>
-            <tr><th>ID</th><th>Bayi Adi</th><th>Sehir</th><th>Telefon</th><th>Arac Sayisi</th><th>Islem</th></tr>
+        <div class="tablo-baslik" style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px;">
+            <h2 style="margin:0;">Bayi Listesi</h2>
+            <input class="arama-kutu" type="text" placeholder="🔍 Bayi Adına Göre Ara..." onkeyup="tabloAra(this, 'bayiler-tablo')" style="width:220px;">
+        </div>
+
+        <table id="bayiler-tablo">
+            <tr>
+                <th>ID</th><th>Bayi Adi</th><th>Sehir</th><th>Adres</th><th>Telefon</th><th>Arac Sayisi</th><th>Islem</th>
+            </tr>
             {% for b in bayiler %}
             <tr>
                 <td>{{ b.bayi_id }}</td>
                 <td>{{ b.bayi_adi }}</td>
                 <td>{{ b.sehir }}</td>
+                <td>{{ b.adres }}</td>
                 <td>{{ b.telefon }}</td>
                 <td>{{ b.arac_sayisi }}</td>
-                <td>
-                    <form method="POST" onsubmit="return confirm('Bayi silinsin mi?');">
+                <td class="islem-hucre">
+                    <button class="btn-mavi" onclick="formAc('bg{{ b.bayi_id }}')">Guncelle</button>
+                    <form method="POST" onsubmit="return confirm('Bayi ve tum verileri silinsin mi?');" style="display:inline;">
                         <input type="hidden" name="bayi_sil" value="1">
                         <input type="hidden" name="bayi_id" value="{{ b.bayi_id }}">
                         <button class="btn-kirmizi" type="submit">Sil</button>
                     </form>
+                    <div id="bg{{ b.bayi_id }}" class="alim-form">
+                        <form method="POST">
+                            <input type="hidden" name="bayi_guncelle" value="1">
+                            <input type="hidden" name="bayi_id" value="{{ b.bayi_id }}">
+                            <input type="text" name="bayi_adi" value="{{ b.bayi_adi }}" placeholder="Bayi Adi" required>
+                            <input type="text" name="sehir" value="{{ b.sehir }}" placeholder="Sehir" required>
+                            <input type="text" name="adres" value="{{ b.adres }}" placeholder="Adres">
+                            <input type="text" name="b_telefon" value="{{ b.telefon }}" placeholder="Telefon" required>
+                            <input type="email" name="b_email" value="{{ b.email }}" placeholder="Email">
+                            <button class="btn-yesil" type="submit">Kaydet</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- ===== PERSONELLER ===== -->
+    <div id="personeller" class="sekme gizli">
+        <div class="kart">
+            <h3>Yeni Personel Ekle</h3>
+            <form method="POST" autocomplete="off">
+                <input type="hidden" name="personel_ekle" value="1">
+                <div class="satir">
+                    <input type="text" name="p_ad_soyad" placeholder="Ad Soyad" maxlength="50" required autocomplete="off">
+                    <input type="email" name="p_email" placeholder="Email" maxlength="100" required autocomplete="new-email">
+                </div>
+                <div class="satir">
+                    <input type="text" name="p_telefon" placeholder="Telefon" maxlength="11" required autocomplete="off">
+                    <input type="password" name="p_sifre" placeholder="Sifre" maxlength="20" required autocomplete="new-password">
+                    <input type="text" name="p_gorev" placeholder="Gorev" maxlength="30" required>
+                </div>
+                <div class="satir">
+                    <select name="p_bayi_id" required>
+                        <option value="">Bayi Secin</option>
+                        {% for b in bayiler %}
+                        <option value="{{ b.bayi_id }}">{{ b.bayi_adi }} - {{ b.sehir }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button class="btn-yesil" type="submit">Personel Ekle</button>
+            </form>
+        </div>
+
+        <div class="tablo-baslik" style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px;">
+            <h2 style="margin:0;">Personel Listesi</h2>
+            <input class="arama-kutu" type="text" placeholder="🔍 Ad Soyadına Göre Ara..." onkeyup="tabloAra(this, 'personel-tablo')" style="width:220px;">
+        </div>
+
+        <table id="personel-tablo">
+            <tr>
+                <th>ID</th><th>Ad Soyad</th><th>Email</th><th>Telefon</th><th>Bayi</th><th>Gorev</th><th>Islem</th>
+            </tr>
+            {% for p in personeller %}
+            <tr>
+                <td>{{ p.personel_id }}</td>
+                <td>{{ p.ad_soyad }}</td>
+                <td>{{ p.email }}</td>
+                <td>{{ p.telefon }}</td>
+                <td>{{ p.bayi_adi }}</td>
+                <td>{{ p.gorev }}</td>
+                <td class="islem-hucre">
+                    <button class="btn-mavi" onclick="formAc('pg{{ p.personel_id }}')">Guncelle</button>
+                    <form method="POST" onsubmit="return confirm('Personel silinsin mi?');" style="display:inline;">
+                        <input type="hidden" name="personel_sil" value="1">
+                        <input type="hidden" name="personel_id" value="{{ p.personel_id }}">
+                        <input type="hidden" name="kullanici_id" value="{{ p.kullanici_id }}">
+                        <button class="btn-kirmizi" type="submit">Sil</button>
+                    </form>
+                    <div id="pg{{ p.personel_id }}" class="alim-form">
+                        <form method="POST">
+                            <input type="hidden" name="personel_guncelle" value="1">
+                            <input type="hidden" name="personel_id" value="{{ p.personel_id }}">
+                            <input type="hidden" name="kullanici_id" value="{{ p.kullanici_id }}">
+                            <input type="text" name="ad_soyad" value="{{ p.ad_soyad }}" placeholder="Ad Soyad" required>
+                            <input type="email" name="email" value="{{ p.email }}" placeholder="Email" required>
+                            <input type="text" name="telefon" value="{{ p.telefon }}" placeholder="Telefon" required>
+                            <input type="text" name="gorev" value="{{ p.gorev }}" placeholder="Gorev" required>
+                            <select name="bayi_id" required>
+                                {% for b in bayiler %}
+                                <option value="{{ b.bayi_id }}" {% if b.bayi_id == p.bayi_id %}selected{% endif %}>
+                                    {{ b.bayi_adi }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn-yesil" type="submit">Kaydet</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -83,23 +210,95 @@
 
     <!-- ===== ARAÇLAR ===== -->
     <div id="araclar" class="sekme gizli">
-        <h2>Tum Araclar</h2>
-        <table>
-            <tr><th>ID</th><th>Marka/Model</th><th>Yil</th><th>Fiyat</th><th>Durum</th><th>Bayi</th><th>Islem</th></tr>
+        <div class="tablo-baslik" style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px;">
+            <h2 style="margin:0;">Tum Araclar</h2>
+            <input class="arama-kutu" type="text" placeholder="🔍 Marka/Model Ara..." onkeyup="tabloAra(this, 'araclar-tablo')" style="width:220px;">
+        </div>
+
+        <table id="araclar-tablo">
+            <tr>
+                <th>ID</th><th>Foto</th><th>Marka/Model</th><th>Yil</th><th>KM</th>
+                <th>Yakit</th><th>Vites</th><th>Fiyat</th><th>Durum</th><th>Hasar</th><th>Bayi</th><th>Islem</th>
+            </tr>
             {% for a in araclar %}
             <tr>
                 <td>{{ a.arac_id }}</td>
+                <td>
+                    {% if a.foto_url %}
+                    <img class="mini-foto" src="{{ url_for('static', filename='uploads/' ~ a.foto_url) }}" onerror="this.src='{{ url_for('static', filename='uploads/varsayilan.jpg') }}'">
+                    {% else %}
+                    <span style="color:#aaa">Foto yok</span>
+                    {% endif %}
+                </td>
                 <td>{{ a.marka }} {{ a.model }}</td>
                 <td>{{ a.yil }}</td>
+                <td>{{ a.kilometre }}</td>
+                <td>{{ a.yakit }}</td>
+                <td>{{ a.vites }}</td>
                 <td>{{ a.fiyat }} TL</td>
                 <td>{{ a.arac_durumu }}</td>
-                <td>{{ a.bayi_adi }}</td>
                 <td>
-                    <form method="POST" onsubmit="return confirm('Silinsin mi?');">
+                    {% if a.hasar_durumu == 'Hasarsız' %}
+                        <span style="background:#d1fae5; color:#065f46; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">✅ {{ a.hasar_durumu }}</span>
+                    {% elif a.hasar_durumu == 'Hasarlı' %}
+                        <span style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">⚠️ {{ a.hasar_durumu }}</span>
+                    {% elif a.hasar_durumu == 'Değişen Var' %}
+                        <span style="background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">🔧 {{ a.hasar_durumu }}</span>
+                    {% else %}
+                        <span style="background:#e5e7eb; color:#374151; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">❓ {{ a.hasar_durumu }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ a.bayi_adi }}</td>
+                <td class="islem-hucre">
+                    <button class="btn-mavi" onclick="formAc('ag{{ a.arac_id }}')">Guncelle</button>
+                    <form method="POST" onsubmit="return confirm('Arac silinsin mi?');" style="display:inline;">
                         <input type="hidden" name="arac_sil" value="1">
                         <input type="hidden" name="arac_id" value="{{ a.arac_id }}">
                         <button class="btn-kirmizi" type="submit">Sil</button>
                     </form>
+                    <div id="ag{{ a.arac_id }}" class="alim-form">
+                        <form method="POST">
+                            <input type="hidden" name="arac_guncelle" value="1">
+                            <input type="hidden" name="arac_id" value="{{ a.arac_id }}">
+                            <div class="satir">
+                                <input type="text" name="marka" value="{{ a.marka }}" placeholder="Marka" required>
+                                <input type="text" name="model" value="{{ a.model }}" placeholder="Model" required>
+                                <input type="number" name="yil" value="{{ a.yil }}" placeholder="Yil" required>
+                                <input type="number" name="kilometre" value="{{ a.kilometre }}" placeholder="KM" required>
+                            </div>
+                            <div class="satir">
+                                <select name="yakit">
+                                    {% for y in ['Benzin','Dizel','LPG','Hibrit','Elektrik'] %}
+                                    <option value="{{ y }}" {% if a.yakit == y %}selected{% endif %}>{{ y }}</option>
+                                    {% endfor %}
+                                </select>
+                                <select name="vites">
+                                    <option value="Manuel" {% if a.vites == 'Manuel' %}selected{% endif %}>Manuel</option>
+                                    <option value="Otomatik" {% if a.vites == 'Otomatik' %}selected{% endif %}>Otomatik</option>
+                                </select>
+                                <input type="text" name="renk" value="{{ a.renk }}" placeholder="Renk" required>
+                                <input type="number" name="fiyat" value="{{ a.fiyat }}" placeholder="Fiyat" required>
+                            </div>
+                            <div class="satir">
+                                <input type="text" name="plaka" value="{{ a.plaka }}" placeholder="Plaka" required>
+                                <select name="arac_durumu">
+                                    {% for d in ['Satista','Satildi','Rezerve'] %}
+                                    <option value="{{ d }}" {% if a.arac_durumu == d %}selected{% endif %}>{{ d }}</option>
+                                    {% endfor %}
+                                </select>
+                                <select name="hasar_durumu">
+                                    <option value="Belirtilmemis" {% if a.hasar_durumu == 'Belirtilmemis' %}selected{% endif %}>Belirtilmemis</option>
+                                    <option value="Hasarsız" {% if a.hasar_durumu == 'Hasarsız' %}selected{% endif %}>Hasarsız</option>
+                                    <option value="Hasarlı" {% if a.hasar_durumu == 'Hasarlı' %}selected{% endif %}>Hasarlı</option>
+                                    <option value="Değişen Var" {% if a.hasar_durumu == 'Değişen Var' %}selected{% endif %}>Değişen Var</option>
+                                </select>
+                            </div>
+                            <div class="satir">
+                                <textarea name="aciklama" placeholder="Araç Açıklaması" maxlength="500" style="width:100%; min-height:60px; padding:9px 12px; border:1px solid #d1d5db; border-radius:5px; font-family:inherit; font-size:13px; resize:vertical;">{{ a.aciklama or '' }}</textarea>
+                            </div>
+                            <button class="btn-yesil" type="submit">Kaydet</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -108,9 +307,15 @@
 
     <!-- ===== KULLANICILAR ===== -->
     <div id="kullanicilar" class="sekme gizli">
-        <h2>Kullanicilar</h2>
-        <table>
-            <tr><th>ID</th><th>Ad Soyad</th><th>Email</th><th>Telefon</th><th>Yetki</th><th>Islem</th></tr>
+        <div class="tablo-baslik" style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px;">
+            <h2 style="margin:0;">Kullanicilar</h2>
+            <input class="arama-kutu" type="text" placeholder="🔍 Ad Soyadına Göre Ara..." onkeyup="tabloAra(this, 'kullanici-tablo')" style="width:220px;">
+        </div>
+
+        <table id="kullanici-tablo">
+            <tr>
+                <th>ID</th><th>Ad Soyad</th><th>Email</th><th>Telefon</th><th>Yetki</th><th>Islem</th>
+            </tr>
             {% for k in kullanicilar %}
             <tr>
                 <td>{{ k.kullanici_id }}</td>
@@ -118,12 +323,29 @@
                 <td>{{ k.email }}</td>
                 <td>{{ k.telefon }}</td>
                 <td>{{ k.yetki }}</td>
-                <td>
-                    <form method="POST" onsubmit="return confirm('Silinsin mi?');">
+                <td class="islem-hucre">
+                    <button class="btn-mavi" onclick="formAc('kg{{ k.kullanici_id }}')">Guncelle</button>
+                    <form method="POST" onsubmit="return confirm('Kullanici silinsin mi?');" style="display:inline;">
                         <input type="hidden" name="kullanici_sil" value="1">
                         <input type="hidden" name="kullanici_id" value="{{ k.kullanici_id }}">
                         <button class="btn-kirmizi" type="submit">Sil</button>
                     </form>
+                    <div id="kg{{ k.kullanici_id }}" class="alim-form">
+                        <form method="POST">
+                            <input type="hidden" name="kullanici_guncelle" value="1">
+                            <input type="hidden" name="kullanici_id" value="{{ k.kullanici_id }}">
+                            <input type="text"  name="ad_soyad" value="{{ k.ad_soyad }}" placeholder="Ad Soyad" required>
+                            <input type="email" name="email"    value="{{ k.email }}"    placeholder="Email"    required>
+                            <input type="text"  name="telefon"  value="{{ k.telefon }}"  placeholder="Telefon"  required>
+                            <select name="yetki">
+                                <option value="musteri"  {% if k.yetki=='musteri'  %}selected{% endif %}>Musteri</option>
+                                <option value="personel" {% if k.yetki=='personel' %}selected{% endif %}>Personel</option>
+                                <option value="admin"    {% if k.yetki=='admin'    %}selected{% endif %}>Admin</option>
+                            </select>
+                            <input type="password" name="yeni_sifre" placeholder="Yeni Sifre (bos=degisme)">
+                            <button class="btn-yesil" type="submit">Kaydet</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -132,17 +354,34 @@
 
     <!-- ===== ALİM TALEPLERİ ===== -->
     <div id="alim" class="sekme gizli">
-        <h2>Alim Talepleri</h2>
-        <table>
-            <tr><th>ID</th><th>Musteri</th><th>Arac</th><th>Fiyat</th><th>Odeme</th><th>Durum</th><th>Bayi</th><th>Tarih</th></tr>
+        <div class="tablo-baslik" style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px;">
+            <h2 style="margin:0;">Alim Talepleri</h2>
+            <input class="arama-kutu" type="text" placeholder="🔍 Müşteri/Araç Ara..." onkeyup="tabloAra(this, 'alim-tablo')" style="width:220px;">
+        </div>
+
+        <table id="alim-tablo">
+            <tr>
+                <th>ID</th><th>Foto</th><th>Musteri</th><th>Arac</th><th>Fiyat</th><th>Odeme</th><th>Durum</th><th>Bayi</th><th>Tarih</th>
+            </tr>
             {% for t in alim_talepleri %}
             <tr>
                 <td>{{ t.alim_id }}</td>
+                <td>
+                    {% if t.foto_url %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ t.foto_url) }}"
+                         style="width:60px;height:45px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'">
+                    {% else %}<span style="color:#ccc;font-size:20px;">🚗</span>{% endif %}
+                </td>
                 <td>{{ t.ad_soyad }}</td>
                 <td>{{ t.marka }} {{ t.model }}</td>
                 <td>{{ t.fiyat }} TL</td>
                 <td>{{ t.odeme_tipi }}</td>
-                <td>{{ t.durum }}</td>
+                <td>
+                    {% if t.durum == 'Beklemede' %}<span class="durum-bekleme">Beklemede</span>
+                    {% elif t.durum == 'Gorusuluyor' %}<span class="durum-gorusuluyor">Gorusuluyor</span>
+                    {% elif t.durum == 'Onaylandi' %}<span class="durum-onayli">Onaylandi</span>
+                    {% else %}<span class="durum-red">{{ t.durum }}</span>{% endif %}
+                </td>
                 <td>{{ t.bayi_adi }}</td>
                 <td>{{ t.talep_tarihi }}</td>
             </tr>
@@ -152,41 +391,72 @@
 
     <!-- ===== SATIM TALEPLERİ ===== -->
     <div id="satim" class="sekme gizli">
-        <h2>Satim Talepleri</h2>
-        <table>
-            <tr><th>ID</th><th>Musteri</th><th>Arac</th><th>Fiyat Bek.</th><th>Durum</th><th>Bayi</th><th>Tarih</th></tr>
+        <div class="tablo-baslik" style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px;">
+            <h2 style="margin:0;">Satim Talepleri</h2>
+            <input class="arama-kutu" type="text" placeholder="🔍 Müşteri/Araç Ara..." onkeyup="tabloAra(this, 'satim-tablo')" style="width:220px;">
+        </div>
+
+        <table id="satim-tablo">
+            <tr>
+                <th>ID</th><th>Foto</th><th>Musteri</th><th>Arac</th><th>Fiyat Bek.</th><th>Durum</th><th>Bayi</th><th>Tarih</th>
+            </tr>
             {% for t in satim_talepleri %}
             <tr>
                 <td>{{ t.satim_id }}</td>
+                <td>
+                    {% if t.foto_url %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ t.foto_url) }}"
+                         style="width:60px;height:45px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'">
+                    {% else %}<span style="color:#ccc;font-size:20px;">🚗</span>{% endif %}
+                </td>
                 <td>{{ t.ad_soyad }}</td>
                 <td>{{ t.marka }} {{ t.model }}</td>
                 <td>{{ t.fiyat_beklentisi }} TL</td>
-                <td>{{ t.durum }}</td>
+                <td>
+                    {% if t.durum == 'Beklemede' %}<span class="durum-bekleme">Beklemede</span>
+                    {% elif t.durum == 'Gorusuluyor' %}<span class="durum-gorusuluyor">Gorusuluyor</span>
+                    {% elif t.durum == 'Satin Alindi' %}<span class="durum-onayli">Satin Alindi</span>
+                    {% else %}<span class="durum-red">{{ t.durum }}</span>{% endif %}
+                </td>
                 <td>{{ t.bayi_adi }}</td>
                 <td>{{ t.talep_tarihi }}</td>
             </tr>
             {% endfor %}
         </table>
     </div>
-
 </div>
 
 <script>
-    function goster(id, btn) {
-        // Tum sekmeleri gizle
-        var sekmeler = document.getElementsByClassName('sekme');
-        for (var i = 0; i < sekmeler.length; i++) {
-            sekmeler[i].classList.add('gizli');
-        }
-        // Tum butonlardan aktif clas'i kaldir
-        var butonlar = document.getElementsByClassName('sekme-btn');
-        for (var i = 0; i < butonlar.length; i++) {
-            butonlar[i].classList.remove('aktif');
-        }
-        // Secilen sekmeyi goster
-        document.getElementById(id).classList.remove('gizli');
-        btn.classList.add('aktif');
+function goster(id, btn) {
+    document.querySelectorAll('.sekme').forEach(s => s.classList.add('gizli'));
+    document.querySelectorAll('.sekme-btn').forEach(b => b.classList.remove('aktif'));
+    document.getElementById(id).classList.remove('gizli');
+    btn.classList.add('aktif');
+}
+
+function formAc(id) {
+    var f = document.getElementById(id);
+    f.style.display = f.style.display === 'block' ? 'none' : 'block';
+}
+
+function tabloAra(input, tabloId) {
+    var filtre = input.value.toLowerCase();
+    var satirlar = document.getElementById(tabloId).getElementsByTagName('tr');
+    for (var i = 1; i < satirlar.length; i++) {
+        var metin = satirlar[i].textContent.toLowerCase();
+        satirlar[i].style.display = metin.includes(filtre) ? '' : 'none';
     }
+}
+
+function profilPopupAc() {
+    document.getElementById('profil-overlay').style.display = 'block';
+    document.getElementById('profil-popup').style.display = 'block';
+}
+function profilPopupKapat() {
+    document.getElementById('profil-overlay').style.display = 'none';
+    document.getElementById('profil-popup').style.display = 'none';
+}
+
 </script>
 
 </body>

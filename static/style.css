@@ -1,4 +1,3 @@
-/* GENEL AYARLAR*/
 * {
     margin: 0;
     padding: 0;
@@ -36,7 +35,7 @@ label {
     font-weight: 600;
 }
 
-/* GIRIS / KAYIT SAYFASI */
+/* LOGIN */
 .login-page {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
@@ -105,21 +104,7 @@ label {
     font-size: 13px;
 }
 
-.demo {
-    margin-top: 20px;
-    padding: 12px;
-    background: #f9fafb;
-    border-radius: 6px;
-    font-size: 12px;
-    line-height: 1.7;
-    border: 1px solid #e5e7eb;
-}
-
-.demo b {
-    color: #667eea;
-}
-
-/* ÜST BAR (HEADER) */
+/* HEADER */
 .header {
     background: #667eea;
     color: white;
@@ -151,7 +136,7 @@ label {
     text-decoration: none;
 }
 
-/* SEKME BUTONLARI */
+/* SEKMELER */
 .sekme-btn {
     padding: 10px 18px;
     margin: 15px 5px 15px 0;
@@ -175,12 +160,11 @@ label {
     border-color: #667eea;
 }
 
-/* Sekmenin etrafindaki padding */
 body > div:not(.header) {
     padding: 0 25px;
 }
 
-/*  KARTLAR (FORMLAR ICIN) */
+/* KART */
 .kart {
     background: white;
     padding: 20px;
@@ -195,7 +179,6 @@ body > div:not(.header) {
     font-size: 16px;
 }
 
-/* Form satirlari */
 .satir {
     display: flex;
     gap: 10px;
@@ -222,7 +205,7 @@ body > div:not(.header) {
     border-color: #667eea;
 }
 
-/* BUTONLAR */
+/* BUTON */
 .btn-yesil {
     background: #10b981;
     color: white;
@@ -235,7 +218,9 @@ body > div:not(.header) {
     margin: 2px;
 }
 
-.btn-yesil:hover { background: #059669; }
+.btn-yesil:hover {
+    background: #059669;
+}
 
 .btn-kirmizi {
     background: #ef4444;
@@ -249,7 +234,9 @@ body > div:not(.header) {
     margin: 2px;
 }
 
-.btn-kirmizi:hover { background: #dc2626; }
+.btn-kirmizi:hover {
+    background: #dc2626;
+}
 
 .btn-mavi {
     background: #2563eb;
@@ -263,11 +250,11 @@ body > div:not(.header) {
     margin: 2px;
 }
 
-.btn-mavi:hover { background: #1d4ed8; }
+.btn-mavi:hover {
+    background: #1d4ed8;
+}
 
-/* ============================================
-   TABLOLAR
-   ============================================ */
+/* TABLO */
 table {
     width: 100%;
     background: white;
@@ -276,6 +263,7 @@ table {
     overflow: hidden;
     border: 1px solid #e5e7eb;
     font-size: 13px;
+    margin-bottom: 25px;
 }
 
 table th {
@@ -292,6 +280,7 @@ table td {
     padding: 10px 12px;
     border-bottom: 1px solid #f3f4f6;
     color: #374151;
+    vertical-align: top;
 }
 
 table tr:last-child td {
@@ -302,9 +291,7 @@ table tr:hover {
     background: #f9fafb;
 }
 
-/* ============================================
-   FLASH MESAJLARI (UYARI)
-   ============================================ */
+/* ALERT */
 .alert {
     padding: 12px 18px;
     margin: 15px 0;
@@ -325,9 +312,7 @@ table tr:hover {
     border-color: #ef4444;
 }
 
-/* ============================================
-   DURUM ETIKETLERI
-   ============================================ */
+/* DURUM */
 .durum-bekleme {
     background: #fef3c7;
     color: #92400e;
@@ -364,25 +349,73 @@ table tr:hover {
     font-weight: 600;
 }
 
-/* ============================================
-   ARAC KARTLARI (MUSTERI PANELI)
-   ============================================ */
+/* FILTRE */
+.filtre-kutu {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filtre-kutu input,
+.filtre-kutu select {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    min-width: 130px;
+    font-size: 13px;
+}
+
+.temizle-link {
+    display: inline-block;
+    text-decoration: none;
+}
+
+/* ARAÇ KART */
 .arac-kart {
     display: inline-block;
     width: calc(33% - 20px);
-    min-width: 220px;
+    min-width: 260px;
     margin: 10px;
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 15px;
     vertical-align: top;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    transition: 0.2s;
+}
+
+.arac-kart:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.10);
+}
+
+.arac-foto {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background: #e5e7eb;
+}
+
+.mini-foto {
+    width: 80px;
+    height: 55px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #e5e7eb;
 }
 
 .arac-kart h3 {
-    color: #667eea;
+    color: #1f2937;
     margin-bottom: 8px;
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .arac-kart p {
@@ -392,10 +425,10 @@ table tr:hover {
 }
 
 .arac-kart .fiyat {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: bold;
     color: #10b981;
-    margin: 10px 0;
+    margin: 12px 0;
 }
 
 .arac-kart button {
@@ -403,7 +436,7 @@ table tr:hover {
     margin-top: 8px;
 }
 
-/* Alim formu (arac kartinin icinde acilan) */
+/* AÇILAN FORM */
 .alim-form {
     display: none;
     margin-top: 10px;
@@ -412,6 +445,7 @@ table tr:hover {
     border-radius: 6px;
 }
 
+.alim-form input,
 .alim-form select {
     width: 100%;
     padding: 8px;
@@ -425,9 +459,74 @@ table tr:hover {
     width: 100%;
 }
 
-/* ============================================
-   GIZLEME
-   ============================================ */
+/* GIZLE */
 .gizli {
     display: none;
+}
+
+/* ============================================================
+   PRO TOAST NOTIFICATIONS (Sahibinden style)
+   ============================================================ */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    min-width: 280px;
+    max-width: 380px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideInRight 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              fadeOutRight 0.4s ease-in 3.6s forwards;
+    pointer-events: auto;
+}
+
+.toast-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.toast-error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.toast-info {
+    background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
+}
+
+.toast-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOutRight {
+    to {
+        opacity: 0;
+        transform: translateX(100px);
+        pointer-events: none;
+    }
 }
