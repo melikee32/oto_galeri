@@ -745,10 +745,19 @@ def bayi_panel():
                 if yeni_durum == 'Satin Alindi':
                     im.execute("SELECT * FROM arac_satim_talebi WHERE satim_id=%s", (satim_id,))
                     talep = im.fetchone()
-                    im.execute("""INSERT INTO araclar (bayi_id, marka, model, yil, kilometre, yakit, vites, renk, fiyat, plaka, arac_durumu, foto_url)
-                                  VALUES (%s, %s, %s, %s, %s, 'Benzin', 'Manuel', '-', %s, '-', 'Satista', 'default-car.jpg')""",
+                    # Fotoğrafı, plakayı ve tüm bilgileri talepten al
+                    foto  = talep.get('foto_url') or 'default-car.jpg'
+                    plaka = talep.get('plaka') or '-'
+                    yakit = talep.get('yakit') or 'Belirtilmemis'
+                    vites = talep.get('vites') or 'Belirtilmemis'
+                    renk  = talep.get('renk') or '-'
+                    im.execute("""INSERT INTO araclar
+                                  (bayi_id, marka, model, yil, kilometre, yakit, vites, renk,
+                                   fiyat, plaka, arac_durumu, foto_url)
+                                  VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Satista', %s)""",
                                (bayi_id, talep['marka'], talep['model'], talep['yil'],
-                                talep['kilometre'], talep['fiyat_beklentisi']))
+                                talep['kilometre'], yakit, vites, renk,
+                                talep['fiyat_beklentisi'], plaka, foto))
                 db.commit()
                 flash('Talep guncellendi!', 'success')
             except Exception as h:
@@ -852,12 +861,18 @@ def musteri_panel():
                         foto.save(os.path.join(uygulama.config['UPLOAD_FOLDER'], guvenli_ad))
                         foto_adi = guvenli_ad
                 im.execute("""INSERT INTO arac_satim_talebi
-                              (musteri_id, bayi_id, marka, model, yil, kilometre, fiyat_beklentisi, ekspertiz, foto_url, durum, talep_tarihi)
-                              VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'Beklemede',NOW())""",
+                              (musteri_id, bayi_id, marka, model, yil, kilometre,
+                               fiyat_beklentisi, ekspertiz, plaka, yakit, vites, renk,
+                               foto_url, durum, talep_tarihi)
+                              VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'Beklemede',NOW())""",
                            (session['id'],              request.form['bayi_id'],
                             request.form['marka'][:30], request.form['model'][:30],
                             request.form['yil'],         request.form['kilometre'],
-                            request.form['fiyat'],       request.form['ekspertiz'], foto_adi))
+                            request.form['fiyat'],       request.form['ekspertiz'],
+                            request.form.get('plaka', ''),
+                            request.form.get('yakit', 'Belirtilmemis'),
+                            request.form.get('vites', 'Belirtilmemis'),
+                            request.form.get('renk', ''), foto_adi))
                 db.commit()
                 flash('Satim talebi gonderildi!', 'success')
             except Exception as h:

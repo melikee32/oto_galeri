@@ -326,7 +326,7 @@
         <table id="satim-tablo">
             <tr>
                 <th>ID</th><th>Foto</th><th>Musteri</th><th>Tel</th><th>Arac</th><th>Yil</th>
-                <th>KM</th><th>Fiyat Bek.</th><th>Ekspertiz</th><th>Durum</th><th>Guncelle</th><th>Belgeler</th>
+                <th>KM</th><th>Plaka</th><th>Yakit</th><th>Fiyat Bek.</th><th>Ekspertiz</th><th>Durum</th><th>Guncelle</th><th>Belgeler</th>
             </tr>
             {% for t in satim_talepleri %}
             <tr>
@@ -342,6 +342,8 @@
                 <td>{{ t.marka }} {{ t.model }}</td>
                 <td>{{ t.yil }}</td>
                 <td>{{ t.kilometre }}</td>
+                <td>{{ t.plaka or '-' }}</td>
+                <td>{{ t.yakit or '-' }}</td>
                 <td>{{ t.fiyat_beklentisi }} TL</td>
                 <td>{{ t.ekspertiz }}</td>
                 <td>

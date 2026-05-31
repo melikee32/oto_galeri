@@ -1,9 +1,11 @@
+/* Tüm elemanların varsayılan boşluklarını sıfırlar */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Sayfanın genel yazı tipi, arka planı ve yazı rengi */
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: #f3f4f6;
@@ -11,21 +13,25 @@ body {
     line-height: 1.5;
 }
 
+/* Linklerin genel görünümü */
 a {
     color: #2563eb;
     text-decoration: none;
 }
 
+/* Linkin üzerine gelince alt çizgi ekler */
 a:hover {
     text-decoration: underline;
 }
 
+/* Sayfa içindeki yatay çizgi */
 hr {
     border: none;
     border-top: 1px solid #e5e7eb;
     margin: 15px 0;
 }
 
+/* Formlarda inputların üstündeki açıklama yazıları */
 label {
     display: block;
     margin-top: 8px;
@@ -36,6 +42,7 @@ label {
 }
 
 /* LOGIN */
+/* Giriş sayfasının arka planı ve formu ortalama işlemi */
 .login-page {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
@@ -45,6 +52,7 @@ label {
     padding: 20px;
 }
 
+/* Giriş formunun bulunduğu beyaz kutu */
 .login-box {
     background: white;
     padding: 40px;
@@ -53,6 +61,7 @@ label {
     width: 380px;
 }
 
+/* Giriş kutusundaki ana başlık */
 .login-box h1 {
     text-align: center;
     color: #667eea;
@@ -60,6 +69,7 @@ label {
     margin-bottom: 5px;
 }
 
+/* Giriş kutusundaki alt başlık */
 .login-box h2 {
     text-align: center;
     color: #6b7280;
@@ -68,6 +78,7 @@ label {
     margin-bottom: 25px;
 }
 
+/* Giriş formundaki input alanları */
 .login-box input {
     width: 100%;
     padding: 12px;
@@ -77,11 +88,13 @@ label {
     font-size: 14px;
 }
 
+/* Inputa tıklanınca kenarlık rengini değiştirir */
 .login-box input:focus {
     outline: none;
     border-color: #667eea;
 }
 
+/* Giriş butonu */
 .login-box button {
     width: 100%;
     padding: 12px;
@@ -94,10 +107,12 @@ label {
     cursor: pointer;
 }
 
+/* Giriş butonunun üzerine gelince renk değişir */
 .login-box button:hover {
     background: #5568d3;
 }
 
+/* Kayıt ol bağlantısının bulunduğu alan */
 .signup-link {
     text-align: center;
     margin-top: 15px;
@@ -105,6 +120,7 @@ label {
 }
 
 /* HEADER */
+/* Sayfanın üst kısmındaki başlık ve çıkış alanı */
 .header {
     background: #667eea;
     color: white;
@@ -114,15 +130,18 @@ label {
     align-items: center;
 }
 
+/* Header içindeki başlık */
 .header h1 {
     font-size: 18px;
 }
 
+/* Header içindeki kullanıcı bilgisi yazısı */
 .header span {
     margin-right: 15px;
     font-size: 14px;
 }
 
+/* Header içindeki çıkış linki */
 .header a {
     color: white;
     background: #ef4444;
@@ -131,12 +150,14 @@ label {
     font-size: 13px;
 }
 
+/* Çıkış linkinin üzerine gelince görünümü */
 .header a:hover {
     background: #dc2626;
     text-decoration: none;
 }
 
 /* SEKMELER */
+/* Admin, bayi veya müşteri panelindeki sekme butonları */
 .sekme-btn {
     padding: 10px 18px;
     margin: 15px 5px 15px 0;
@@ -149,22 +170,26 @@ label {
     color: #374151;
 }
 
+/* Sekme butonunun üzerine gelince */
 .sekme-btn:hover {
     border-color: #667eea;
     color: #667eea;
 }
 
+/* Aktif olan sekmenin görünümü */
 .sekme-btn.aktif {
     background: #667eea;
     color: white;
     border-color: #667eea;
 }
 
+/* Header hariç diğer div alanlarına sağ-sol boşluk verir */
 body > div:not(.header) {
     padding: 0 25px;
 }
 
 /* KART */
+/* Formların ve içeriklerin bulunduğu beyaz kutular */
 .kart {
     background: white;
     padding: 20px;
@@ -173,12 +198,14 @@ body > div:not(.header) {
     border: 1px solid #e5e7eb;
 }
 
+/* Kart içindeki başlıklar */
 .kart h3 {
     color: #1f2937;
     margin-bottom: 12px;
     font-size: 16px;
 }
 
+/* Form elemanlarını yan yana dizer */
 .satir {
     display: flex;
     gap: 10px;
@@ -186,6 +213,7 @@ body > div:not(.header) {
     margin-bottom: 10px;
 }
 
+/* Satır içindeki input, select ve textarea alanları */
 .satir input,
 .satir select,
 .satir textarea {
@@ -198,6 +226,7 @@ body > div:not(.header) {
     background: white;
 }
 
+/* Form alanına tıklanınca kenarlık rengini değiştirir */
 .satir input:focus,
 .satir select:focus,
 .satir textarea:focus {
@@ -206,6 +235,7 @@ body > div:not(.header) {
 }
 
 /* BUTON */
+/* Yeşil buton: ekleme, onaylama gibi olumlu işlemler */
 .btn-yesil {
     background: #10b981;
     color: white;
@@ -218,10 +248,12 @@ body > div:not(.header) {
     margin: 2px;
 }
 
+/* Yeşil buton hover efekti */
 .btn-yesil:hover {
     background: #059669;
 }
 
+/* Kırmızı buton: silme veya reddetme işlemleri */
 .btn-kirmizi {
     background: #ef4444;
     color: white;
@@ -234,10 +266,12 @@ body > div:not(.header) {
     margin: 2px;
 }
 
+/* Kırmızı buton hover efekti */
 .btn-kirmizi:hover {
     background: #dc2626;
 }
 
+/* Mavi buton: güncelleme veya genel işlem butonu */
 .btn-mavi {
     background: #2563eb;
     color: white;
@@ -250,11 +284,13 @@ body > div:not(.header) {
     margin: 2px;
 }
 
+/* Mavi buton hover efekti */
 .btn-mavi:hover {
     background: #1d4ed8;
 }
 
 /* TABLO */
+/* Kullanıcı, bayi, araç ve taleplerin listelendiği tablolar */
 table {
     width: 100%;
     background: white;
@@ -266,6 +302,7 @@ table {
     margin-bottom: 25px;
 }
 
+/* Tablo başlık satırı */
 table th {
     background: #667eea;
     color: white;
@@ -276,6 +313,7 @@ table th {
     text-transform: uppercase;
 }
 
+/* Tablo hücreleri */
 table td {
     padding: 10px 12px;
     border-bottom: 1px solid #f3f4f6;
@@ -283,15 +321,18 @@ table td {
     vertical-align: top;
 }
 
+/* Son satırda alt çizgiyi kaldırır */
 table tr:last-child td {
     border-bottom: none;
 }
 
+/* Tablo satırının üzerine gelince arka plan rengi */
 table tr:hover {
     background: #f9fafb;
 }
 
 /* ALERT */
+/* Sayfa içinde gösterilen başarı veya hata mesajlarının genel yapısı */
 .alert {
     padding: 12px 18px;
     margin: 15px 0;
@@ -300,12 +341,14 @@ table tr:hover {
     border-left: 4px solid;
 }
 
+/* Başarılı işlem mesajı */
 .alert-success {
     background: #d1fae5;
     color: #065f46;
     border-color: #10b981;
 }
 
+/* Hata mesajı */
 .alert-error {
     background: #fee2e2;
     color: #991b1b;
@@ -313,6 +356,7 @@ table tr:hover {
 }
 
 /* DURUM */
+/* Talep beklemedeyse sarı etiket gösterir */
 .durum-bekleme {
     background: #fef3c7;
     color: #92400e;
@@ -322,6 +366,7 @@ table tr:hover {
     font-weight: 600;
 }
 
+/* Talep görüşülüyor durumundaysa mavi tonlu etiket gösterir */
 .durum-gorusuluyor {
     background: #e0e7ff;
     color: #3730a3;
@@ -331,6 +376,7 @@ table tr:hover {
     font-weight: 600;
 }
 
+/* Talep onaylandıysa yeşil etiket gösterir */
 .durum-onayli {
     background: #d1fae5;
     color: #065f46;
@@ -340,6 +386,7 @@ table tr:hover {
     font-weight: 600;
 }
 
+/* Talep reddedildiyse kırmızı etiket gösterir */
 .durum-red {
     background: #fee2e2;
     color: #991b1b;
@@ -350,6 +397,7 @@ table tr:hover {
 }
 
 /* FILTRE */
+/* Araç arama ve filtreleme alanı */
 .filtre-kutu {
     background: white;
     padding: 18px;
@@ -361,6 +409,7 @@ table tr:hover {
     flex-wrap: wrap;
 }
 
+/* Filtre kutusundaki input ve seçim alanları */
 .filtre-kutu input,
 .filtre-kutu select {
     padding: 10px 12px;
@@ -370,12 +419,14 @@ table tr:hover {
     font-size: 13px;
 }
 
+/* Filtreleri temizleme linki */
 .temizle-link {
     display: inline-block;
     text-decoration: none;
 }
 
 /* ARAÇ KART */
+/* Satıştaki araçların kart şeklinde gösterildiği alan */
 .arac-kart {
     display: inline-block;
     width: calc(33% - 20px);
@@ -390,11 +441,13 @@ table tr:hover {
     transition: 0.2s;
 }
 
+/* Araç kartının üzerine gelince hafif yukarı kalkar */
 .arac-kart:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 22px rgba(0,0,0,0.10);
 }
 
+/* Araç fotoğrafının boyutu ve görünümü */
 .arac-foto {
     width: 100%;
     height: 160px;
@@ -404,6 +457,7 @@ table tr:hover {
     background: #e5e7eb;
 }
 
+/* Tablo içinde kullanılan küçük araç fotoğrafı */
 .mini-foto {
     width: 80px;
     height: 55px;
@@ -412,18 +466,21 @@ table tr:hover {
     background: #e5e7eb;
 }
 
+/* Araç kartındaki araç başlığı */
 .arac-kart h3 {
     color: #1f2937;
     margin-bottom: 8px;
     font-size: 18px;
 }
 
+/* Araç kartındaki açıklama yazıları */
 .arac-kart p {
     font-size: 13px;
     margin: 4px 0;
     color: #6b7280;
 }
 
+/* Araç fiyatının büyük ve yeşil görünmesi */
 .arac-kart .fiyat {
     font-size: 22px;
     font-weight: bold;
@@ -431,12 +488,14 @@ table tr:hover {
     margin: 12px 0;
 }
 
+/* Araç kartındaki butonların genişliği */
 .arac-kart button {
     width: 100%;
     margin-top: 8px;
 }
 
 /* AÇILAN FORM */
+/* Araç satın alma işleminde açılan form alanı */
 .alim-form {
     display: none;
     margin-top: 10px;
@@ -445,6 +504,7 @@ table tr:hover {
     border-radius: 6px;
 }
 
+/* Satın alma formundaki input ve seçim alanları */
 .alim-form input,
 .alim-form select {
     width: 100%;
@@ -455,18 +515,23 @@ table tr:hover {
     font-size: 13px;
 }
 
+/* Satın alma formundaki buton */
 .alim-form button {
     width: 100%;
 }
 
 /* GIZLE */
+/* Görünmemesi gereken alanları gizlemek için kullanılır */
 .gizli {
     display: none;
 }
 
 /* ============================================================
    PRO TOAST NOTIFICATIONS (Sahibinden style)
+   İşlem sonrası sağ üstte çıkan küçük bildirim kutuları
    ============================================================ */
+
+/* Toast bildirimlerinin sayfadaki konumu */
 .toast-container {
     position: fixed;
     top: 20px;
@@ -478,6 +543,7 @@ table tr:hover {
     pointer-events: none;
 }
 
+/* Toast bildiriminin genel kutu tasarımı */
 .toast {
     min-width: 280px;
     max-width: 380px;
@@ -495,23 +561,28 @@ table tr:hover {
     pointer-events: auto;
 }
 
+/* Başarılı toast bildirimi */
 .toast-success {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
+/* Hatalı toast bildirimi */
 .toast-error {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
+/* Bilgilendirme toast bildirimi */
 .toast-info {
     background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
 }
 
+/* Toast içindeki ikon alanı */
 .toast-icon {
     font-size: 18px;
     flex-shrink: 0;
 }
 
+/* Toast bildiriminin sağdan ekrana giriş animasyonu */
 @keyframes slideInRight {
     from {
         opacity: 0;
@@ -523,6 +594,7 @@ table tr:hover {
     }
 }
 
+/* Toast bildiriminin sağa kayarak kaybolma animasyonu */
 @keyframes fadeOutRight {
     to {
         opacity: 0;

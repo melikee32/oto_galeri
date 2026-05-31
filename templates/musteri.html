@@ -390,8 +390,24 @@
                         <option value="Hasarli">Hasarli</option>
                     </select>
                 </div>
+                <div class="satir">
+                    <input type="text" name="plaka" placeholder="Plaka (örn: 34 ABC 01)" maxlength="15">
+                    <input type="text" name="renk" placeholder="Renk" maxlength="20">
+                    <select name="yakit">
+                        <option value="Benzin">Benzin</option>
+                        <option value="Dizel">Dizel</option>
+                        <option value="Hibrit">Hibrit</option>
+                        <option value="Elektrik">Elektrik</option>
+                        <option value="LPG">LPG</option>
+                    </select>
+                    <select name="vites">
+                        <option value="Manuel">Manuel</option>
+                        <option value="Otomatik">Otomatik</option>
+                        <option value="Yari Otomatik">Yari Otomatik</option>
+                    </select>
+                </div>
                 <div class="satir" style="align-items:center;">
-                    <label style="margin:0; white-space:nowrap;">📷 Arac Fotoğrafı:</label>
+                    <label style="margin:0; white-space:nowrap;">📷 Arac Fotografu:</label>
                     <input type="file" name="foto" accept="image/png,image/jpeg,image/webp">
                 </div>
                 <button class="btn-yesil" type="submit">Talep Gonder</button>
